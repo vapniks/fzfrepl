@@ -148,7 +148,7 @@ else
 	cut -d" " -f 1 --complement > "${tmpfile2}"
 fi
 
-local prompt="${${cmd//\{q\}}:0:15}${${${${cmd//\{q\}}:15}:-}:+... }"
+local prompt="${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 
 FZF_DEFAULT_OPTS+=" --header='C-g=quit,C-j=finish,C-t=toggle preview,RET=accept,M-w=copy,M-v=view,C-v=view all'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
