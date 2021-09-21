@@ -5,7 +5,7 @@ local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 usage() {
   less -FEXR <<'HELP'
 fzfrepl -c "CMD" [OPTION]... [FILE]
-Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied.
+Interactively edit stdin using stream filters like awk, sed, jq, mlr. Uses STDIN if no FILE is supplied.
 OPTIONS:
   -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
