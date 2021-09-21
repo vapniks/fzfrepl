@@ -10,8 +10,8 @@ OPTIONS:
   -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
   -o, --output            output the stream filter (otherwise just the command is printed)
-  -H, --helpcmd1 CMDSTR   command for displaying help when alt-h is pressed (default: "CMD --help")
-  -J, --helpcmd2 CMDSTR   command for displaying more help when ctrl-h is pressed (default: "man CMD")
+  -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
+  -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
   -n, --no-file-subst     don't replace {f} with FILE
   -h, --help              show this help text
@@ -80,11 +80,11 @@ for arg; do
 	    output=y
 	    shift 1
 	    ;;
-	-H|--helpcmd1)
+	-H1|--helpcmd1)
 	    helpcmd1="$2"
 	    shift 2
 	    ;;
-	-J|--helpcmd2)
+	-H2|--helpcmd2)
 	    helpcmd2="$2"
 	    shift 2
 	    ;;
