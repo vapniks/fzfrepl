@@ -8,19 +8,17 @@ how to use a particular command.
 This makes it very useful for data processing pipelines with tools such as awk & [[https://github.com/johnkerl/miller][miller]], which though powerful can
 be hard to remember the syntax for.
 ** Usage
-fzfrepl -c "CMD" [OPTION]... [FILE]
-\pagebreak
-Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied.
-\pagebreak
-OPTIONS:
-  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
-  -q, --query QUERY       default query string to use (i.e. initial prompt input)
-  -o, --output            output the stream filter (otherwise just the command is printed)
-  -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
-  -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
-  -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
-  -n, --no-file-subst     don't replace {f} with FILE
-  -h, --help              show this help text
+fzfrepl -c "CMD" [OPTION]... [FILE] \\
+Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied. \\
+OPTIONS: \\
+  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE) \\
+  -q, --query QUERY       default query string to use (i.e. initial prompt input) \\
+  -o, --output            output the stream filter (otherwise just the command is printed) \\
+  -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help") \\
+  -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD") \\
+  -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed) \\
+  -n, --no-file-subst     don't replace {f} with FILE \\
+  -h, --help              show this help text \\
 
 By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
 and its contents are available for selection in the main screen, or by pressing alt-1.
@@ -30,10 +28,10 @@ To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or
 
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
 
-Examples:
-  echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
-  echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
-  fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
+*** Examples
+ - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
+ - echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
+ - fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
 ** Keybindings
 | Ctrl+t | toggle preview window (to reveal the full header which lists keybindings)                        |
 | Ctrl+j | accept prompt input and print command line or its output (if -o option was used)                 |
