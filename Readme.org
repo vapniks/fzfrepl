@@ -8,8 +8,8 @@ how to use a particular command.
 This makes it very useful for data processing pipelines with tools such as awk & [[https://github.com/johnkerl/miller][miller]], which though powerful can
 be hard to remember the syntax for.
 ** Usage
-fzfrepl -c "CMD" [OPTION]... [FILE]
-Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied.
+fzfrepl -c "CMD" [OPTION]... [FILE] \newline
+Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied.\newline
 OPTIONS:
   -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
@@ -69,3 +69,11 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    comment within the quotes of the command, e.g. sed -n "1,10p #print first 10 lines".
    Press Ctrl+s to store the current line (at the prompt) into the $FZFREPL_COMMANDS file.
    
+** Copyright notice
+Copyright (C) 2016 Daniel F Gray DanielFGray@gmail.com, 2021 Joe Bloggs vapniks@yahoo.com
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.   
