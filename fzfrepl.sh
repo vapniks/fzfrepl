@@ -1,31 +1,32 @@
 #!/usr/bin/env zsh
 
 local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
-#TODO update usage
+
 usage() {
   less -FEXR <<'HELP'
-fzfrepl
-  interactively edit stdin using stream filters like awk, sed, jq
-  -c, --cmd CMD               command used to filter input
-  -q, --query QUERY           default command string to use
-  -o, --output                output the stream filter (otherwise just the command is printed)
-  -H1, --helpcmd1 CMD         command for displaying help when alt-h is pressed
-  -H2, --helpcmd2 CMD         command for displaying more help when ctrl-h is pressed
-  -r, --remove RX             regexp for filtering out shell history items (e.g. '-i' for sed)
-  -n, --no-file-substitution  don't replace {f} with trailing filename 
+fzfrepl -c "CMD" [OPTION]... [FILE]
+Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied.
+OPTIONS:
+  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
+  -q, --query QUERY       default query string to use (i.e. initial prompt input)
+  -o, --output            output the stream filter (otherwise just the command is printed)
+  -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
+  -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
+  -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
+  -n, --no-file-subst     don't replace {f} with FILE
 
-fzfrepl history is saved to ${FZFREPL_DIR}/CMD_history (when CMD is the main command word).
-Its contents are available for selection in the main screen by default, or by pressing alt-1.
-You can switch to the contents of ${FZFREPL_DIR}/CMD_commands by pressing alt-2, or to filtered 
-zsh shell history by pressing alt-3 (items matching the arg to --remove will be removed).
-To change the files used for these selections set FZFREPL_HISTORY & FZFREPL_COMMANDS.
+By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
+and its contents are available for selection in the main screen, or by pressing alt-1.
+You can switch to the contents of ~/.fzfrepl/CMD_commands by pressing alt-2, or to filtered 
+zsh shell history (lines matching CMD but not the -r option arg) by pressing alt-3.
+To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or just FZFREPL_DIR.
 
-Set FZFREPL_DEFAULT_OPTS to alter fzf options, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
+To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
 
 examples:
-  echo 'foo bar' | fzfrepl -c 'awk {q}' -q '{print}'
-  echo 'hello world' | fzfrepl -q p 'sed -n {q}'
-  FZFREPL_HISTORY=jqhistory fzfrepl jq package.json
+  echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
+  echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
+  fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
 HELP
 }
 
@@ -119,7 +120,6 @@ if [[ -n $1 && -f $1 ]]; then
   shift
 fi
 
-#TODO: check this works
 if [[ -z ${file} ]]; then
     cat > ${tmpfile1}
 fi
