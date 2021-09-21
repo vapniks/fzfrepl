@@ -1,32 +1,40 @@
 * fzfrepl
-Edit commands/pipelines with fzf, and view live output while editing.
+Edit commands/pipelines with [[https://github.com/junegunn/fzf][fzf]], and view live output while editing.
 
 This is a rewrite of Daniel Grey's fantastic [[https://github.com/DanielFGray/fzf-scripts/blob/master/fzrepl][fzrepl]] written for zsh instead of bash.
 This version uses the selections window for command line args instead of input.
-It gives you quick access to shell history, stored arguments, and help pages, so you have no excuse for forgetting
-how to use a particular command.
-This makes it very useful for data processing pipelines with tools such as awk & [[https://github.com/johnkerl/miller][miller]], which though powerful can
-be hard to remember the syntax for.
+It gives you quick access to shell history, stored arguments, and help pages, so you have no excuse for getting the syntax wrong for a particular command.
+This makes it very useful for data processing pipelines with tools such as sed, awk & [[https://github.com/johnkerl/miller][miller]] which, though powerful, can
+be hard to remember how to use.
 ** Usage
-fzfrepl -c "CMD" [OPTION]... [FILE] \\
-Interactively edit stdin using stream filters like awk, sed, jq. Uses STDIN if no FILE is supplied. \\
+~fzfrepl -c "CMD" [OPTION]... [FILE]~
+
+Interactively edit stdin using stream filters like *awk*, *sed*, *jq*. Uses STDIN if no FILE is supplied. 
+
 OPTIONS: \\
-  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE) \\
-  -q, --query QUERY       default query string to use (i.e. initial prompt input) \\
-  -o, --output            output the stream filter (otherwise just the command is printed) \\
-  -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help") \\
-  -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD") \\
-  -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed) \\
-  -n, --no-file-subst     don't replace {f} with FILE \\
-  -h, --help              show this help text \\
+  ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by prompt input & *FILE*)
+  
+  ~-q, --query QUERY~       default query string to use (i.e. initial prompt input)
+  
+  ~-o, --output~            output the stream filter (otherwise just the command is printed)
+  
+  ~-H1, --helpcmd1 CMDSTR~  command for displaying help when alt-h is pressed (default: "CMD --help")
+  
+  ~-H2, --helpcmd2 CMDSTR~  command for displaying more help when ctrl-h is pressed (default: "man CMD")
+  
+  ~-r, --remove REGEX~      regexp for filtering out shell history items (e.g. -i for sed)
+  
+  ~-n, --no-file-subst~     don't replace {f} with FILE
+  
+  ~-h, --help~              show this help text
 
-By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
+By default fzfrepl history is saved to *~/.fzfrepl/CMD_history* (when *CMD* is the main command word),
 and its contents are available for selection in the main screen, or by pressing alt-1.
-You can switch to the contents of ~/.fzfrepl/CMD_commands by pressing alt-2, or to filtered 
-zsh shell history (lines matching CMD but not the -r option arg) by pressing alt-3.
-To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or just FZFREPL_DIR.
+You can switch to the contents of *~/.fzfrepl/CMD_commands* by pressing alt-2, or to filtered 
+zsh shell history (lines matching *CMD* but not the -r option arg) by pressing alt-3.
+To change the location of these files set *FZFREPL_HISTORY* & *FZFREPL_COMMANDS*, or just *FZFREPL_DIR*.
 
-To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
+To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--preview-window=down:50%~"
 
 *** Examples
  - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
@@ -39,21 +47,21 @@ To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--prev
 | Ctrl+k | kill line                                                                                        |
 | RET    | copy current selection to prompt                                                                 |
 | home   | move pointer back to first selection                                                             |
-| Alt+1  | Switch selections to selections history (stored in $FZFREPL_HISTORY file)                        |
-| Alt+2  | Switch selections to contents of $FZFREPL_COMMANDS file                                          |
+| Alt+1  | Switch selections to selections history (stored in *$FZFREPL_HISTORY* file)                        |
+| Alt+2  | Switch selections to contents of *$FZFREPL_COMMANDS* file                                          |
 | Alt+3  | Switch selections to filtered shell history (lines matching command name, but not -r option arg) |
-| Ctrl+s | Save current line (at the prompt) into the current $FZFREPL_COMMANDS file                        |
-| Alt+h  | Show main help page (default is output of "CMD --help" )                                         |
-| Ctrl+h | Show alternate help page (default is output of "man CMD")                                        |
-| Ctrl+v | View full input with $PAGER                                                                      |
-| Alt+v  | View output with $PAGER (same as preview window, but full screen)                                |
+| Ctrl+s | Save current line (at the prompt) into the current *$FZFREPL_COMMANDS* file                        |
+| Alt+h  | Show main help page (see the -H1 option in the usage section)                                         |
+| Ctrl+h | Show alternate help page (see the -H2 option in the usage section)                                        |
+| Ctrl+v | View full input with *$PAGER*                                                                      |
+| Alt+v  | View output with *$PAGER* (same as preview window, but full screen)                                |
 ** Files & environment variables
-| $FZFREPL_DIR          | directory used by default for history & stored input line files (default: ~/.fzfrepl)               |
-| $FZFREPL_COMMANDS     | file containing stored input lines for current base command (default: $FZFREPL_DIR/CMD_commands)    |
-| $FZFREPL_HISTORY      | file containing history of input lines for current base command (default: $FZFREPL_DIR/CMD_history) |
-| $FZFREPL_DEFAULT_OPTS | options for fzf which override or add to the default ones                                           |
-Note: $FZF_DEFAULT_OPTS are applied first, followed by the fzfrepl specific options defined in the source file,
-followed by $FZFREPL_DEFAULT_OPTS.
+| *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)               |
+| *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)    |
+| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*) |
+| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                           |
+Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
+followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
 ** Tips
  - It is tempting put extra quotes around the {q} in the command string, e.g. -c "awk '{q}'". However this causes
@@ -63,11 +71,11 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    it doesn't get mistaken for another fzfrepl option by the option parsing code.
  - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
    e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
- - Lines of the $FZFREPL_COMMANDS file can have comments appended to help you remember what they do (and make searching
+ - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
    the selections window easier). However you may need to delete any comment before accepting the command line or it may
-   comment out the input redirection. For certain command such as awk & sed you can avoid this problem by keeping the
-   comment within the quotes of the command, e.g. sed -n "1,10p #print first 10 lines".
-   Press Ctrl+s to store the current line (at the prompt) into the $FZFREPL_COMMANDS file.
+   comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
+   comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
+   Press Ctrl+s to store the current line (at the prompt) into the *$FZFREPL_COMMANDS* file.
    
 ** Copyright notice
 Copyright (C) 2016 Daniel F Gray DanielFGray@gmail.com, 2021 Joe Bloggs vapniks@yahoo.com
