@@ -9,7 +9,7 @@ be hard to remember how to use.
 ** Usage
 ~fzfrepl -c "CMD" [OPTION]... [FILE]~
 
-Interactively edit stdin using stream filters like *awk*, *sed*, *jq*. Uses STDIN if no FILE is supplied. 
+Interactively edit stdin using stream filters like *awk*, *sed*, *jq*, *mlr*. Uses STDIN if no FILE is supplied. 
 
 OPTIONS: \\
   ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by prompt input & *FILE*)
