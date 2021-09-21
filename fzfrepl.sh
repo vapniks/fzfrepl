@@ -27,7 +27,7 @@ To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--prev
 examples:
   echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
   echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
-  fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
+  fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
 HELP
 }
 
