@@ -56,10 +56,11 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
 | Ctrl+v | View full input with *$PAGER*                                                                      |
 | Alt+v  | View output with *$PAGER* (same as preview window, but full screen)                                |
 ** Files & environment variables
-| *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)               |
-| *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)    |
-| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*) |
-| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                           |
+| *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)                   |
+| *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)      |
+| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)   |
+| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                               |
+| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt (colons will be replaced by commas) |
 Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
