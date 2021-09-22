@@ -150,7 +150,19 @@ fi
 
 local prompt="${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 
-FZF_DEFAULT_OPTS+=" --header='C-g=quit,C-j=finish,C-t=toggle preview,RET=accept,M-w=copy,M-v=view,C-v=view all'"
+# Fix header to fit screen
+local header1="C-g=quit:C-j=finish:C-t=toggle preview window:RET=copy selection to prompt:M-w=copy prompt to clipboard:C-v=view input:M-v=view output:M-1/2/3=change selections:M-h=show help:C-h=show more help"
+local header2 i1 i2 ncols=$((COLUMNS-5))
+until ((i2>${#header1})); do
+    i2=${${header1[${i1:-0},((i1+ncols))]}[(I):]}
+    header2+="${header1[$i1,((i2-1))]}
+"
+    i1=$((i2+1))
+    i2=$((i2+ncols))
+done
+header2+=${header1[$i1,$i2]}
+
+FZF_DEFAULT_OPTS+=" --header='${header2//:/,}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${file}} >/dev/tty),alt-v:execute(eval ${(Q)cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
