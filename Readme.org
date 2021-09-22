@@ -78,6 +78,8 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
    comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
    Press Ctrl+s to store the current query string into the *$FZFREPL_COMMANDS* file.
+ - If you prefer to always see all available selections (i.e. don't filter them with the query string) you can set
+   the value of *$FZFREPL_DEFAULT_OPTS* to include '--phony'.
    
 ** Copyright notice
 Copyright (C) 2016 Daniel F Gray DanielFGray@gmail.com, 2021 Joe Bloggs vapniks@yahoo.com
