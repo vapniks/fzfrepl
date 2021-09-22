@@ -28,7 +28,7 @@ examples:
   echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
   echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
   fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
-  seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c 'feedgnuplot --terminal dumb --exit {q}'
+  seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 HELP
 }
 

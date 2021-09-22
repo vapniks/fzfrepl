@@ -40,7 +40,7 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
  - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
  - echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
  - fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
- - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c 'feedgnuplot --terminal dumb --exit {q}'
+ - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 ** Keybindings
 | Ctrl+t | toggle preview window (to reveal the full header which lists keybindings)                        |
 | Ctrl+j | accept query string and print command line or its output (if -o option was used)                 |
