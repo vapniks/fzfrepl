@@ -40,7 +40,8 @@ local cmd default_query output helpcmd1 removerx filebrace
 
 typeset -A colors
 colors[red]=$(tput setaf 1)
-colors[green]=$(tput setaf 2)colors[reset]=$(tput sgr0)
+colors[green]=$(tput setaf 2)
+colors[reset]=$(tput sgr0)
 
 cleanup() {
     [[ -e "$tmpfile1" ]] && rm "$tmpfile1"
