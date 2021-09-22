@@ -12,7 +12,7 @@ be hard to remember how to use.
 Interactively edit stdin using stream filters like *awk*, *sed*, *jq*, *mlr*. Uses STDIN if no FILE is supplied. 
 
 OPTIONS: \\
-  ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by prompt input & *FILE*)
+  ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by query string & *FILE*)
   
   ~-q, --query QUERY~       default query string to use (i.e. initial prompt input)
   
@@ -43,19 +43,19 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
  - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c 'feedgnuplot --terminal dumb --exit {q}'
 ** Keybindings
 | Ctrl+t | toggle preview window (to reveal the full header which lists keybindings)                        |
-| Ctrl+j | accept prompt input and print command line or its output (if -o option was used)                 |
-| Alt+w  | Copy contents of prompt to clipboard                                                             |
+| Ctrl+j | accept query string and print command line or its output (if -o option was used)                 |
+| Alt+w  | Copy query string to clipboard                                                                   |
 | Ctrl+k | kill line                                                                                        |
 | RET    | copy current selection to prompt                                                                 |
 | home   | move pointer back to first selection                                                             |
-| Alt+1  | Switch selections to selections history (stored in *$FZFREPL_HISTORY* file)                        |
-| Alt+2  | Switch selections to contents of *$FZFREPL_COMMANDS* file                                          |
+| Alt+1  | Switch selections to selections history (stored in *$FZFREPL_HISTORY* file)                      |
+| Alt+2  | Switch selections to contents of *$FZFREPL_COMMANDS* file                                        |
 | Alt+3  | Switch selections to filtered shell history (lines matching command name, but not -r option arg) |
-| Ctrl+s | Save current line (at the prompt) into the current *$FZFREPL_COMMANDS* file                        |
-| Alt+h  | Show main help page (see the -H1 option in the usage section)                                         |
-| Ctrl+h | Show alternate help page (see the -H2 option in the usage section)                                        |
-| Ctrl+v | View full input with *$PAGER*                                                                      |
-| Alt+v  | View output with *$PAGER* (same as preview window, but full screen)                                |
+| Ctrl+s | Save current query string into the current *$FZFREPL_COMMANDS* file          |
+| Alt+h  | Show main help page (see the -H1 option in the usage section)                                    |
+| Ctrl+h | Show alternate help page (see the -H2 option in the usage section)                               |
+| Ctrl+v | View full input with *$PAGER*                                                                    |
+| Alt+v  | View output with *$PAGER* (same as preview window, but full screen)                              |
 ** Files & environment variables
 | *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)                   |
 | *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)      |
@@ -77,7 +77,7 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    the selections window easier). However you may need to delete any comment before accepting the command line or it may
    comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
    comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
-   Press Ctrl+s to store the current line (at the prompt) into the *$FZFREPL_COMMANDS* file.
+   Press Ctrl+s to store the current query string into the *$FZFREPL_COMMANDS* file.
    
 ** Copyright notice
 Copyright (C) 2016 Daniel F Gray DanielFGray@gmail.com, 2021 Joe Bloggs vapniks@yahoo.com

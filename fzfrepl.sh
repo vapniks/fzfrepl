@@ -7,7 +7,7 @@ usage() {
 fzfrepl -c "CMD" [OPTION]... [FILE]
 Interactively edit stdin using stream filters like awk, sed, jq, mlr. Uses STDIN if no FILE is supplied.
 OPTIONS:
-  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by prompt input & FILE)
+  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by query string & FILE)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
   -o, --output            output the stream filter (otherwise just the command is printed)
   -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
