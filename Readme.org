@@ -70,6 +70,8 @@ Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific op
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
 ** Tips
+ - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
+   e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
  - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
    don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing Alt+v).
    Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
@@ -79,8 +81,6 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    at the prompt.
  - If your initial query string starts with a -, put a space before it on the command line, e.g. -q ' --csv' so that
    it doesn't get mistaken for another fzfrepl option by the option parsing code.
- - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
-   e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
  - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
    the selections window easier). However you may need to delete any comment before accepting the command line or it may
    comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
