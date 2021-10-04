@@ -23,8 +23,12 @@ OPTIONS: \\
   ~-H2, --helpcmd2 CMDSTR~  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   
   ~-r, --remove REGEX~      regexp for filtering out shell history items (e.g. -i for sed)
+
+  ~-d, --header~            show filename, size & permissions at top of preview window
   
-  ~-n, --no-file-subst~     don't replace {f} with FILE
+  ~-n, --numlines N~        No. of lines piped to preview command (all by default). Useful for large files.
+  
+  ~-N, --no-file-subst~     don't replace {f} with FILE
   
   ~-h, --help~              show this help text
 
@@ -51,11 +55,11 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
 | Alt+1  | Switch selections to selections history (stored in *$FZFREPL_HISTORY* file)                      |
 | Alt+2  | Switch selections to contents of *$FZFREPL_COMMANDS* file                                        |
 | Alt+3  | Switch selections to filtered shell history (lines matching command name, but not -r option arg) |
-| Ctrl+s | Save current query string into the current *$FZFREPL_COMMANDS* file          |
+| Ctrl+s | Save current query string into the current *$FZFREPL_COMMANDS* file                              |
 | Alt+h  | Show main help page (see the -H1 option in the usage section)                                    |
 | Ctrl+h | Show alternate help page (see the -H2 option in the usage section)                               |
 | Ctrl+v | View full input with *$PAGER*                                                                    |
-| Alt+v  | View output with *$PAGER* (same as preview window, but full screen)                              |
+| Alt+v  | View output with *$PAGER* (using all input lines, and full screen)                               |
 ** Files & environment variables
 | *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)                   |
 | *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)      |
@@ -66,6 +70,10 @@ Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific op
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
 ** Tips
+ - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
+   don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing Alt+v).
+   Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
+   entirety.
  - It is tempting put extra quotes around the {q} in the command string, e.g. -c "awk '{q}'". However this causes
    problems if you want to use quotes within the query itself. It's usually better to just add the required quotes
    at the prompt.
