@@ -13,7 +13,9 @@ OPTIONS:
   -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
   -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
-  -n, --no-file-subst     don't replace {f} with FILE
+  -d, --header            show filename, size & permissions at top of preview window
+  -n, --numlines N        No. of lines piped to preview command (all by default). Useful for large files.
+  -N, --no-file-subst     don't replace {f} with FILE
   -h, --help              show this help text
 
 By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
@@ -37,7 +39,8 @@ HELP
 
 local tmpfile1="/tmp/fzfreplinput$$"
 local tmpfile2=/tmp/fzfreplshellhist
-local cmd default_query output helpcmd1 removerx filebrace
+local tmpfile3="/tmp/fzfreplinput_short$$"
+local cmd default_query output helpcmd1 removerx filebrace numlines showhdr
 
 typeset -A colors
 colors[red]=$(tput setaf 1)
@@ -94,7 +97,15 @@ for arg; do
 	    removerx="$2"
 	    shift 2
 	    ;;
-	-n|--no-file-substitution)
+	-n|--numlines)
+	    numlines="$2"
+	    shift 2
+	    ;;
+	-d|--header)
+	    showhdr=y
+	    shift 1;
+	    ;;
+	-N|--no-file-substitution)
 	    filebrace=n
 	    shift 1;
 	    ;;
@@ -127,11 +138,24 @@ if [[ -z ${file} ]]; then
     cat > ${tmpfile1}
 fi
 
-local cmdinput
+local previewcmd cmdinput
 if [[ ${cmd} =~ '\{f\}' && ${filebrace} != n && -n ${file} ]]; then
     cmd="${cmd//\{f\}/${file}}"
 else
-    cmdinput="<${(q)file:-${tmpfile1}}"
+    cmdinput="${(q)file:-${tmpfile1}}"
+fi
+if [[ $showhdr == y ]]; then
+   previewcmd="echo 'NAME = ${file}' && stat -c 'SIZE = %s, PERMISSIONS = %U:%G:%A' ${file} && echo && "
+fi
+if [[ -n ${numlines} ]]; then
+    if [[ -z ${file} ]]; then
+	head -n ${numlines} > ${tmpfile3}
+    else
+	head -n ${numlines} ${file} > ${tmpfile3}
+    fi
+    previewcmd+="eval ${cmd} <${tmpfile3}"
+else
+    previewcmd+="eval ${cmd} <${cmdinput}"
 fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
@@ -166,7 +190,7 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2//:/,}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
-FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${file}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
+FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} <${cmdinput:-${file}} >/dev/tty),alt-v:execute(eval ${cmd} <${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
 local -a qry
 IFS="
@@ -175,13 +199,13 @@ IFS="
 qry=($(cat "${FZFREPL_HISTORY}" |\
 	   fzf --query="$default_query" --sync --ansi --print-query \
 	       ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
-	       --preview="eval ${cmd} ${cmdinput}"))
+	       --preview="${previewcmd}"))
 
 if [[ -z ${qry} ]]; then
     exit
 fi
 if [[ -n ${output} ]]; then
-    eval "${cmd//\{q\}/${qry[1]}} ${cmdinput}"
+    eval "${cmd//\{q\}/${qry[1]}} <${cmdinput}"
 else
     echo "${cmd//\{q\}/${qry[1]}}"
 fi
