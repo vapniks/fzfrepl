@@ -48,8 +48,9 @@ colors[green]=$(tput setaf 2)
 colors[reset]=$(tput sgr0)
 
 cleanup() {
-    [[ -e "$tmpfile1" ]] && rm "$tmpfile1"
-    [[ -e "$tmpfile2" ]] && rm "$tmpfile2"
+    [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
+    [[ -e "${tmpfile2}" ]] && rm "${tmpfile2}"
+    [[ -e "${tmpfile3}" ]] && rm "${tmpfile3}"
 }
 trap cleanup SIGHUP SIGINT SIGTERM
 
