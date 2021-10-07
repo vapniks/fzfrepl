@@ -16,6 +16,7 @@ OPTIONS:
   -d, --header            show filename, size & permissions at top of preview window
   -n, --numlines N        No. of lines piped to preview command (all by default). Useful for large files.
   -N, --no-file-subst     don't replace {f} with FILE
+  -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are FILE args)
   -h, --help              show this help text
 
 By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
@@ -39,8 +40,8 @@ HELP
 
 local tmpfile1="/tmp/fzfreplinput$$"
 local tmpfile2=/tmp/fzfreplshellhist
-local tmpfile3="/tmp/fzfreplinput_short$$"
-local cmd default_query output helpcmd1 removerx filebrace numlines showhdr
+local cmd default_query output helpcmd1 removerx 
+local filebrace numlines showhdr ignorestdin
 
 typeset -A colors
 colors[red]=$(tput setaf 1)
@@ -50,7 +51,6 @@ colors[reset]=$(tput sgr0)
 cleanup() {
     [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
     [[ -e "${tmpfile2}" ]] && rm "${tmpfile2}"
-    [[ -e "${tmpfile3}" ]] && rm "${tmpfile3}"
 }
 trap cleanup SIGHUP SIGINT SIGTERM
 
@@ -110,6 +110,10 @@ for arg; do
 	    filebrace=n
 	    shift 1;
 	    ;;
+	-i|--ignore-stdin)
+	    ignorestdin=y
+	    shift 1;
+	    ;;
 	-h|--help) usage; exit ;;
 	*)  break 2
 	    ;;
@@ -135,28 +139,27 @@ if [[ -n $1 && -f $1 ]]; then
   shift
 fi
 
-if [[ -z ${file} ]]; then
+if [[ -z ${file} && ${ignorestdin} != y ]]; then
     cat > ${tmpfile1}
 fi
 
 local previewcmd cmdinput
 if [[ ${cmd} =~ '\{f\}' && ${filebrace} != n && -n ${file} ]]; then
     cmd="${cmd//\{f\}/${file}}"
-else
-    cmdinput="${(q)file:-${tmpfile1}}"
+elif [[ -n ${file} || -s ${tmpfile1} ]]; then
+    cmdinput="<${(q)file:-${tmpfile1}}"
 fi
 if [[ $showhdr == y ]]; then
    previewcmd="echo 'NAME = ${file}' && stat -c 'SIZE = %s, PERMISSIONS = %U:%G:%A' ${file} && echo && "
 fi
-if [[ -n ${numlines} ]]; then
-    if [[ -z ${file} ]]; then
-	head -n ${numlines} > ${tmpfile3}
+if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
+    if [[ -n ${file} ]]; then
+	previewcmd+="{ head -n ${numlines} ${file} | eval ${cmd} }"
     else
-	head -n ${numlines} ${file} > ${tmpfile3}
+	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd} }"
     fi
-    previewcmd+="eval ${cmd} <${tmpfile3}"
 else
-    previewcmd+="eval ${cmd} <${cmdinput}"
+    previewcmd+="eval ${cmd} ${cmdinput}"
 fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
@@ -195,7 +198,7 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2//:/,}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
-FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} <${cmdinput:-${file}} >/dev/tty),alt-v:execute(eval ${cmd} <${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
+FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${file:+<${file}}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
 local -a qry
 IFS="
@@ -210,7 +213,7 @@ if [[ -z ${qry} ]]; then
     exit
 fi
 if [[ -n ${output} ]]; then
-    eval "${cmd//\{q\}/${qry[1]}} <${cmdinput}"
+    eval "${cmd//\{q\}/${qry[1]}} ${cmdinput}"
 else
     echo "${cmd//\{q\}/${qry[1]}}"
 fi
