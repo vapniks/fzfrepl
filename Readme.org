@@ -29,6 +29,8 @@ OPTIONS: \\
   ~-n, --numlines N~        No. of lines piped to preview command (all by default). Useful for large files.
   
   ~-N, --no-file-subst~     don't replace {f} with FILE
+
+  ~-i, --ignore-stdin~      ignore any input from STDIN (STDIN is also ignored if there are FILE args)
   
   ~-h, --help~              show this help text
 
@@ -81,6 +83,8 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
    at the prompt.
  - If your initial query string starts with a -, put a space before it on the command line, e.g. -q ' --csv' so that
    it doesn't get mistaken for another fzfrepl option by the option parsing code.
+ - If both the fzf prompt and query selections list are empty no preview will be generated.
+   In this case you can type a single space to generate a preview.
  - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
    the selections window easier). However you may need to delete any comment before accepting the command line or it may
    comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
