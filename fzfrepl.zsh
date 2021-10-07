@@ -165,6 +165,10 @@ local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 : ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
 : ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
 
+if [[ ! -e ${FZFREPL_HISTORY} ]]; then
+    touch ${FZFREPL_HISTORY}
+fi
+
 HISTSIZE=10000
 fc -R ~/.zsh_history
 if [[ -n "${removerx}" ]]; then
