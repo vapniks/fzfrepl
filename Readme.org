@@ -28,7 +28,7 @@ OPTIONS: \\
   
   ~-n, --numlines N~        No. of lines piped to preview command (all by default). Useful for large files.
   
-  ~-N, --no-file-subst~     don't replace {f} with FILE
+  ~-N, --no-file-subst~     don't replace {f} with FILE(s)
 
   ~-i, --ignore-stdin~      ignore any input from STDIN (STDIN is also ignored if there are FILE args)
   
@@ -72,27 +72,31 @@ Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific op
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
 ** Tips
- - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
-   e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
- - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
-   don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing Alt+v).
-   Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
-   entirety.
- - It is tempting put extra quotes around the {q} in the command string, e.g. -c "awk '{q}'". However this causes
-   problems if you want to use quotes within the query itself. It's usually better to just add the required quotes
-   at the prompt.
- - If your initial query string starts with a -, put a space before it on the command line, e.g. -q ' --csv' so that
-   it doesn't get mistaken for another fzfrepl option by the option parsing code.
- - If both the fzf prompt and query selections list are empty no preview will be generated.
-   In this case you can type a single space to generate a preview.
- - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
-   the selections window easier). However you may need to delete any comment before accepting the command line or it may
-   comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
-   comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
-   Press Ctrl+s to store the current query string into the *$FZFREPL_COMMANDS* file.
- - If you prefer to always see all available selections (i.e. don't filter them with the query string) you can set
-   the value of *$FZFREPL_DEFAULT_OPTS* to include '--phony'.
-   
+  - For commands such as sqlite3 where the filename comes before the other arguments you can use "{f}" in the
+    command string which will be replaced by the FILE arg.
+  - If you supply multiple FILE args on the command line, then only the first one will be used unless you put "{f}"
+    in your command string, in which case it will be replaced by the list of FILE args.
+  - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
+    e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
+  - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
+    don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing Alt+v).
+    Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
+    entirety.
+  - It is tempting put extra quotes around the {q} in the command string, e.g. -c "awk '{q}'". However this causes
+    problems if you want to use quotes within the query itself. It's usually better to just add the required quotes
+    at the prompt.
+  - If your initial query string starts with a -, put a space before it on the command line, e.g. -q ' --csv' so that
+    it doesn't get mistaken for another fzfrepl option by the option parsing code.
+  - If both the fzf prompt and query selections list are empty no preview will be generated.
+    In this case you can type a single space to generate a preview.
+  - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
+    the selections window easier). However you may need to delete any comment before accepting the command line or it may
+    comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
+    comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
+    Press Ctrl+s to store the current query string into the *$FZFREPL_COMMANDS* file.
+  - If you prefer to always see all available selections (i.e. don't filter them with the query string) you can set
+    the value of *$FZFREPL_DEFAULT_OPTS* to include '--phony'.
+
 ** Copyright notice
 Copyright (C) 2016 Daniel F Gray DanielFGray@gmail.com, 2021 Joe Bloggs vapniks@yahoo.com
 
