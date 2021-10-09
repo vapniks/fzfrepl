@@ -4,7 +4,7 @@ local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 
 usage() {
   less -FEXR <<'HELP'
-fzfrepl -c "CMD" [OPTION]... [FILE]
+fzfrepl -c "CMD" [OPTION]... [FILE]...
 Interactively edit stdin using stream filters like awk, sed, jq, mlr. Uses STDIN if no FILE is supplied.
 OPTIONS:
   -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by query string & FILE)
@@ -15,7 +15,7 @@ OPTIONS:
   -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
   -d, --header            show filename, size & permissions at top of preview window
   -n, --numlines N        No. of lines piped to preview command (all by default). Useful for large files.
-  -N, --no-file-subst     don't replace {f} with FILE
+  -N, --no-file-subst     don't replace {f} with FILE(s)
   -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are FILE args)
   -h, --help              show this help text
 
@@ -134,9 +134,12 @@ if [[ $cmd != *'{q}'* ]]; then
   cmd+=' {q}'
 fi
 
+local file files
 if [[ -n $1 && -f $1 ]]; then
-  file=$1
-  shift
+    file=$1
+    if [[ -n $2 ]]; then
+	files=$@
+    fi
 fi
 
 if [[ -z ${file} && ${ignorestdin} != y ]]; then
@@ -144,8 +147,8 @@ if [[ -z ${file} && ${ignorestdin} != y ]]; then
 fi
 
 local previewcmd cmdinput
-if [[ ${cmd} =~ '\{f\}' && ${filebrace} != n && -n ${file} ]]; then
-    cmd="${cmd//\{f\}/${file}}"
+if [[ ${cmd} =~ '\{f\}' && ${filebrace} != n && -n ${files} ]]; then
+    cmd="${cmd//\{f\}/${files[@]}}"
 elif [[ -n ${file} || -s ${tmpfile1} ]]; then
     cmdinput="<${(q)file:-${tmpfile1}}"
 fi
@@ -198,7 +201,7 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2//:/,}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
-FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${file:+<${file}}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
+FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
 local -a qry
 IFS="
