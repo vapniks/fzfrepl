@@ -75,6 +75,8 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
 ** Tips
   - For commands such as sqlite3 where the filename comes before the other arguments you can use "{f}" in the
     command string which will be replaced by the FILE arg.
+  - When used in conjuction with fzf_tool_launcher you can save the output by first viewing it with the pager
+    (e.g. less), and then using the pagers facility to save its input to a file.
   - If you supply multiple FILE args on the command line, then only the first one will be used unless you put "{f}"
     in your command string, in which case it will be replaced by the list of FILE args. This makes it possible
     to use grep multiple files using fzf: fzfrepl -c "grep {q} {f}" FILE1 FILE2...
