@@ -138,9 +138,7 @@ fi
 local file files
 if [[ -n $1 && -f $1 ]]; then
     file=$1
-    if [[ -n $2 ]]; then
-	files=$@
-    fi
+    files=$@
 fi
 
 if [[ -z ${file} && ${ignorestdin} != y ]]; then
