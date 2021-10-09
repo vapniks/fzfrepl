@@ -45,6 +45,7 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
 *** Examples
  - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
  - echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
+ - fzfrepl -c 'grep {q} {f}' /path/to/files/*.txt
  - fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
  - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 ** Keybindings
@@ -75,7 +76,8 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
   - For commands such as sqlite3 where the filename comes before the other arguments you can use "{f}" in the
     command string which will be replaced by the FILE arg.
   - If you supply multiple FILE args on the command line, then only the first one will be used unless you put "{f}"
-    in your command string, in which case it will be replaced by the list of FILE args.
+    in your command string, in which case it will be replaced by the list of FILE args. This makes it possible
+    to use grep multiple files using fzf: fzfrepl -c "grep {q} {f}" FILE1 FILE2...
   - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
     e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
   - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
