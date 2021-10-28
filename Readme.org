@@ -48,6 +48,14 @@ To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--p
  - fzfrepl -c 'grep {q} {f}' /path/to/files/*.txt
  - fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
  - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
+
+Here is a more advanced example which is useful for building/debugging ffmpeg filtergraphs.
+You need to have [[https://ffmpeg.org/][ffmpeg]], [[https://video.stackexchange.com/questions/21017/ffmpeg-graph2dot-tool][graph2dot]] and [[https://metacpan.org/pod/Graph::Easy][graph-easy]] installed.
+The preview window will display a diagram of the filtergraph entered at the prompt (the current query string).
+You can store useful filtergraphs in the ~/.fzfrepl/ffmpeg_filters file, and browse them by pressing Alt+2:
+
+FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_COMMANDS=~/.fzfrepl/ffmpeg_filters fzfrepl -i -H1 "ffmpeg -filters" -H2 "man ffmpeg-filters" -o q -c "echo \"{q}\"|graph2dot|graph-easy --boxart"
+
 ** Keybindings
 | Ctrl+t | toggle preview window (to reveal the full header which lists keybindings)                        |
 | Ctrl+j | accept query string and print command line or its output (if -o option was used)                 |
