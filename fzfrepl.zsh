@@ -29,10 +29,10 @@ To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
 
 examples:
-  echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
-  echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
+  echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'
+  echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'
   fzfrepl -c 'grep {q} {f}' /path/to/files/*.txt
-  fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
+  fzfrepl -o o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
   seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 HELP
 }
