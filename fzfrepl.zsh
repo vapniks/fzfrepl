@@ -9,7 +9,8 @@ Interactively edit stdin using stream filters like awk, sed, jq, mlr. Uses STDIN
 OPTIONS:
   -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by query string & FILE)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
-  -o, --output            output the stream filter (otherwise just the command is printed)
+  -o, --output [o|q]      output the stream filter output (o) or just the query string (q)
+                          (by default the command with embedded query string is output)
   -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
   -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
@@ -84,8 +85,8 @@ for arg; do
 	    shift 2
 	    ;;
 	-o|--output)
-	    output=y
-	    shift 1
+	    output="$2"
+	    shift 2
 	    ;;
 	-H1|--helpcmd1)
 	    helpcmd1="$2"
@@ -214,8 +215,10 @@ qry=($(cat "${FZFREPL_HISTORY}" |\
 if [[ -z ${qry} ]]; then
     exit
 fi
-if [[ -n ${output} ]]; then
+if [[ ${output} =~ [oO] ]]; then
     eval "${cmd//\{q\}/${qry[1]}} ${cmdinput}"
+elif [[ ${output} =~ [qQ] ]]; then
+    echo "${(Q)qry[1]}"
 else
     echo "${cmd//\{q\}/${qry[1]}}"
 fi
