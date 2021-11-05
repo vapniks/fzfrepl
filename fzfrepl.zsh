@@ -189,13 +189,14 @@ local prompt="${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 
 # Fix header to fit screen
 local header1="${colors[green]}${FZFREPL_HEADER:-C-g=quit:C-j=finish:C-t=toggle preview window:RET=copy selection to prompt:M-w=copy prompt to clipboard:C-v=view input:M-v=view output:M-1/2/3=change selections:M-h=show help:C-h=show more help}${colors[reset]}"
-local header2 i1=0 i2=0 ncols=$((COLUMNS-5))
+local header2 i1=0 ncols=$((COLUMNS-5))
+local i2=ncols
 until ((i2>${#header1})); do
-    i2=${${header1[${i1:-0},((i1+ncols))]}[(I):]}
-    header2+="${header1[$i1,((i2-1))]}
+    i2=${${header1[${i1:-0},${i2}]}[(I):]}
+    header2+="${header1[${i1},((i1+i2-1))]}
 "
-    i1=$((i2+1))
-    i2=$((i2+ncols))
+    i1=$((i1+i2+1))
+    i2=$((i1+ncols))
 done
 header2+=${header1[$i1,$i2]}
 
