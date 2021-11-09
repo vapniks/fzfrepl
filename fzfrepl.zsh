@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
+local FZFTOOL="${FZFTOOL:-${ZSH_CUSTOM}/fzf_tool_launcher.zsh}"
 
 usage() {
   less -FEXR <<'HELP'
@@ -42,6 +43,7 @@ HELP
 
 local tmpfile1="/tmp/fzfreplinput$$"
 local tmpfile2=/tmp/fzfreplshellhist
+local tmpfile3="/tmp/fzfreploutput$$"
 local cmd default_query output helpcmd1 removerx 
 local filebrace numlines showhdr ignorestdin
 
@@ -53,6 +55,7 @@ colors[reset]=$(tput sgr0)
 cleanup() {
     [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
     [[ -e "${tmpfile2}" ]] && rm "${tmpfile2}"
+    [[ -e "${tmpfile3}" ]] && rm "${tmpfile3}"
 }
 trap cleanup SIGHUP SIGINT SIGTERM
 
@@ -147,7 +150,7 @@ if [[ -z ${file} && ${ignorestdin} != y ]]; then
 fi
 
 local previewcmd cmdinput
-if [[ ${cmd} =~ '\{f\}' && ${filebrace} != n && -n ${files} ]]; then
+if [[ ${cmd} == *\{f\}* && ${filebrace} != n && -n ${files} ]]; then
     cmd="${cmd//\{f\}/${files[@]}}"
 elif [[ -n ${file} || -s ${tmpfile1} ]]; then
     cmdinput="<${(q)file:-${tmpfile1}}"
@@ -187,12 +190,12 @@ fi
 
 local prompt="${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 
-# Fix header to fit screen
-local header1="${colors[green]}${FZFREPL_HEADER:-C-g=quit:C-j=finish:C-t=toggle preview window:RET=copy selection to prompt:M-w=copy prompt to clipboard:C-v=view input:M-v=view output:M-1/2/3=change selections:M-h=show help:C-h=show more help}${colors[reset]}"
+# Fit header to fit screen
+local header1="${colors[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview window|RET:copy selection to prompt|M-w:copy prompt to clipboard|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${colors[reset]}"
 local header2 i1=0 ncols=$((COLUMNS-5))
-local i2=ncols
+local i2=${ncols}
 until ((i2>${#header1})); do
-    i2=${${header1[${i1:-0},${i2}]}[(I):]}
+    i2=${${header1[${i1:-0},${i2}]}[(I)\|]}
     header2+="${header1[${i1},((i1+i2-1))]}
 "
     i1=$((i1+i2+1))
@@ -200,8 +203,11 @@ until ((i2>${#header1})); do
 done
 header2+=${header1[$i1,$i2]}
 
-FZF_DEFAULT_OPTS+=" --header='${header2//:/,}'"
+FZF_DEFAULT_OPTS+=" --header='${header2}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
+if command -v fzftool-menu >&/dev/null && [[ -a ${FZFTOOL} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3} && source ${FZFTOOL} && fzftool-menu ${tmpfile3})'"
+fi
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
 local -a qry
