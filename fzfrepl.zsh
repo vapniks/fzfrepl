@@ -139,6 +139,7 @@ if [[ $cmd != *'{q}'* ]]; then
   cmd+=' {q}'
 fi
 
+# only the 1st file is used for previews
 local file files
 if [[ -n $1 && -f $1 ]]; then
     file=$1
@@ -149,15 +150,18 @@ if [[ -z ${file} && ${ignorestdin} != y ]]; then
     cat > ${tmpfile1}
 fi
 
+# place the input file(s) in {f} or pipe into the STDIN of the command
 local previewcmd cmdinput
 if [[ ${cmd} == *\{f\}* && ${filebrace} != n && -n ${files} ]]; then
     cmd="${cmd//\{f\}/${files[@]}}"
 elif [[ -n ${file} || -s ${tmpfile1} ]]; then
     cmdinput="<${(q)file:-${tmpfile1}}"
 fi
+# optionally display file info in preview window
 if [[ $showhdr == y ]]; then
    previewcmd="echo 'NAME = ${file}' && stat -c 'SIZE = %s, PERMISSIONS = %U:%G:%A' ${file} && echo && "
 fi
+# optionally limit preview to head of file
 if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
     if [[ -n ${file} ]]; then
 	previewcmd+="{ head -n ${numlines} ${file} | eval ${cmd} }"
@@ -177,15 +181,13 @@ local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 if [[ ! -e ${FZFREPL_HISTORY} ]]; then
     touch ${FZFREPL_HISTORY}
 fi
-
+# save items from zsh history for history selections (alt-1)
 HISTSIZE=10000
 fc -R ~/.zsh_history
 if [[ -n "${removerx}" ]]; then
-    fc -l -1 | grep -o "\<${cmdword} .*" | grep -v "${removerx}" | \
-	cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o "\<${cmdword} .*" | grep -v "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 else
-    fc -l -1 | grep -o "\<${cmdword} .*" | \
-	cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 fi
 
 local prompt="${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
@@ -205,6 +207,7 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
+# Add keybinding for continuing the pipeline with fzftool-menu, if available
 if command -v fzftool-menu >&/dev/null && [[ -a ${FZFTOOL} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3} && source ${FZFTOOL} && fzftool-menu ${tmpfile3})'"
 fi
