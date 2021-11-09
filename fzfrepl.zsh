@@ -236,3 +236,6 @@ fi
 if [[ -e ${tmpfile1} ]]; then
    rm ${tmpfile1}
 fi
+if [[ -e ${tmpfile2} ]]; then
+   rm ${tmpfile2}
+fi
