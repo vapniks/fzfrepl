@@ -1,7 +1,36 @@
 #!/usr/bin/env zsh
 
-local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzf_tool_launcher.zsh}"
+local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
+local TMPDIR="${TMPDIR:-/tmp}"
+local FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
+: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
+: ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
+# Check files & directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, but we must check the others)
+if [[ ! ( -d "${TMPDIR}" && -w "${TMPDIR}" ) ]]; then
+    print "Error: cannot write files to TMPDIR=${TMPDIR}"
+    return 1
+fi
+if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
+    touch ${FZFREPL_COMMANDS}
+fi
+if [[ -r ${FZFREPL_COMMANDS} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_COMMANDS})'"
+else
+    print "Warning: unable to read commands from ${FZFREPL_COMMANDS}"
+fi
+if [[ -w ${FZFREPL_COMMANDS} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi)'"
+else
+    print "Warning: unable to save commands to ${FZFREPL_COMMANDS}"
+fi
+if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
+    mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
+fi
+if [[ ! -w "${FZFREPL_DATADIR}" ]]; then
+    print "Error: cannot write files to ${FZFREPL_DATADIR}"
+    return 1
+fi
 
 usage() {
   less -FEXR <<'HELP'
@@ -41,9 +70,9 @@ HELP
 # TODO: better "wrapping", this is painful:
 # fzfrepl 'node -e {q}' -q "done = data => data;\nlet A='';process.stdin.on('data',x=>A=A.concat(x.toString())).on('end',()=>{let d = done(A);process.stdout.write(`${String.prototype.trim.call(typeof d==='string'?d:JSON.stringify(d,null,2))}\n`)})"
 
-local tmpfile1="/tmp/fzfrepl-$$.in"
-local tmpfile2=/tmp/fzfrepl-shellhist
-local tmpfile3="/tmp/fzfrepl-$$.out"
+local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
+local tmpfile2="${TMPDIR}/fzfrepl-shellhist"
+local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$.out"
 local cmd default_query output helpcmd1 removerx 
 local filebrace numlines showhdr ignorestdin
 
@@ -176,12 +205,7 @@ fi
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 : ${helpcmd1:=${cmdword} --help}
 : ${helpcmd2:=man ${cmdword}}
-: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
-: ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
 
-if [[ ! -e ${FZFREPL_HISTORY} ]]; then
-    touch ${FZFREPL_HISTORY}
-fi
 # save items from zsh history for history selections (alt-1)
 HISTSIZE=10000
 fc -R ~/.zsh_history
@@ -209,12 +233,11 @@ done
 header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent({ if ! [ -e ${FZFREPL_COMMANDS} ]; then touch ${FZFREPL_COMMANDS}; fi } && { if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi })'"
 # Add keybinding for continuing the pipeline with fzftool-menu, if available
 if [[ -a ${FZFTOOL_SRC} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3} && source ${FZFTOOL_SRC} && fzftool-menu ${tmpfile3})'"
 fi
-FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-2:reload(cat ${FZFREPL_COMMANDS}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
+FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top,alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2}),alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty),ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty),ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty),alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty),alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)' --preview-window=right:50% --height=100% --prompt '${prompt}' ${FZFREPL_DEFAULT_OPTS}"
 
 local -a qry
 IFS="
