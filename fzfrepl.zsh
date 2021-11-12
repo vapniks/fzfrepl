@@ -181,7 +181,7 @@ if [[ -z ${file} && ${ignorestdin} != y ]]; then
 fi
 
 # place the input file(s) in {f} or pipe into the STDIN of the command
-local previewcmd cmdinput
+local previewcmd cmdinput cmd2="${cmd}"
 if [[ ${cmd} == *\{f\}* && ${filebrace} != n && -n ${files} ]]; then
     cmd="${cmd//\{f\}/${files[@]}}"
 elif [[ -n ${file} || -s ${tmpfile1} ]]; then
@@ -193,10 +193,14 @@ if [[ $showhdr == y ]]; then
 fi
 # optionally limit preview to head of file
 if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
-    if [[ -n ${file} ]]; then
-	previewcmd+="{ head -n ${numlines} ${file} | eval ${cmd} }"
+    if [[ -n ${files[@]} ]]; then
+	if [[ ${filebrace} == n ]]; then
+	    previewcmd+="{ head -n ${numlines} ${files[@]} | eval ${cmd2} }"
+	else
+	    previewcmd+="{ head -n ${numlines} ${files[@]} | eval ${cmd2//\{f\}} }"
+	fi
     else
-	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd} }"
+	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd2} }"
     fi
 else
     previewcmd+="eval ${cmd} ${cmdinput}"
