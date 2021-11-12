@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzf_tool_launcher.zsh}"
+local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
 local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 local TMPDIR="${TMPDIR:-/tmp}"
 local FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
