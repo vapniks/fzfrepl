@@ -173,7 +173,7 @@ fi
 local file files
 if [[ -n $1 && -f $1 ]]; then
     file=$1
-    files=$@
+    files="${${@/%/\"}[@]/#/\"}"
 fi
 
 if [[ -z ${file} && ${ignorestdin} != y ]]; then
@@ -203,7 +203,7 @@ if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
 	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd2} }"
     fi
 else
-    previewcmd+="eval ${cmd} ${cmdinput}"
+    previewcmd+="eval '${cmd} ${cmdinput}'"
 fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
@@ -245,7 +245,7 @@ FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-prev
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput} | ${PAGER} >/dev/tty)'"
+FZF_DEFAULT_OPTS+=" --bind \"alt-v:execute(eval '${(q)cmd} ${(q)cmdinput}' | ${PAGER} >/dev/tty)\""
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2})'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
