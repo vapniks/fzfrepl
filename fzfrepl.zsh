@@ -1,28 +1,14 @@
 #!/usr/bin/env zsh
 
+# TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
 local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 local TMPDIR="${TMPDIR:-/tmp}"
 local FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
-: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
-: ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
-# Check files & directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, but we must check the others)
+# Check files & directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, and FZFREPL_COMMANDS is checked later)
 if [[ ! ( -d "${TMPDIR}" && -w "${TMPDIR}" ) ]]; then
     print "Error: cannot write files to TMPDIR=${TMPDIR}"
     return 1
-fi
-if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
-    touch ${FZFREPL_COMMANDS}
-fi
-if [[ -r ${FZFREPL_COMMANDS} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_COMMANDS})'"
-else
-    print "Warning: unable to read commands from ${FZFREPL_COMMANDS}"
-fi
-if [[ -w ${FZFREPL_COMMANDS} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi)'"
-else
-    print "Warning: unable to save commands to ${FZFREPL_COMMANDS}"
 fi
 if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
     mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
@@ -203,13 +189,28 @@ if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
 	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd2} }"
     fi
 else
-    previewcmd+="eval '${cmd} ${cmdinput}'"
+    previewcmd+="eval ${cmd} ${cmdinput}"
 fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 : ${helpcmd1:=${cmdword} --help}
 : ${helpcmd2:=man ${cmdword}}
-
+: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
+: ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
+if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
+    touch ${FZFREPL_COMMANDS}
+else
+    if [[ -r ${FZFREPL_COMMANDS} ]]; then
+	FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_COMMANDS})'"
+    else
+	print "Warning: unable to read commands from ${FZFREPL_COMMANDS}"
+    fi
+    if [[ -w ${FZFREPL_COMMANDS} ]]; then
+	FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi)'"
+    else
+	print "Warning: unable to save commands to ${FZFREPL_COMMANDS}"
+    fi
+fi
 # save items from zsh history for history selections (alt-1)
 HISTSIZE=10000
 fc -R ~/.zsh_history
@@ -245,6 +246,7 @@ FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-prev
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty)'"
+# following command needs to be quoted differently to work with URLs containing spaces
 FZF_DEFAULT_OPTS+=" --bind \"alt-v:execute(eval '${(q)cmd} ${(q)cmdinput}' | ${PAGER} >/dev/tty)\""
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2})'"
