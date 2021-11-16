@@ -240,7 +240,7 @@ header2+=${header1[$i1,$i2]}
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 # Add keybinding for continuing the pipeline with fzftoolmenu, if available
 if [[ -a ${FZFTOOL_SRC} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3} && source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
 fi
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
