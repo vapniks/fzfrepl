@@ -197,6 +197,9 @@ local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 : ${helpcmd2:=man ${cmdword}}
 : ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
 : ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
+if [[ ! -e ${FZFREPL_HISTORY} ]]; then
+    touch ${FZFREPL_HISTORY}
+fi
 if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
     touch ${FZFREPL_COMMANDS}
 else
