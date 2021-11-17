@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
+#       save pipeline to top of file? or separate file labelled by PID? (fzfrepl-$$.cmd?)
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
 local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 local TMPDIR="${TMPDIR:-/tmp}"
@@ -17,7 +18,7 @@ if [[ ! -w "${FZFREPL_DATADIR}" ]]; then
     print "Error: cannot write files to ${FZFREPL_DATADIR}"
     return 1
 fi
-
+# TODO: replace FILE with SOURCE
 usage() {
   less -FEXR <<'HELP'
 fzfrepl -c "CMD" [OPTION]... [FILE]...
@@ -155,39 +156,55 @@ if [[ $cmd != *'{q}'* ]]; then
   cmd+=' {q}'
 fi
 
-# only the 1st file is used for previews
-local file files
-if [[ -n $1 && -f $1 ]]; then
-    file=$1
-    files="${${@/%/\"}[@]/#/\"}"
-fi
-
-if [[ -z ${file} && ${ignorestdin} != y ]]; then
+# non-option args are treated as input sources
+typeset -a sources
+# If there are no sources use STDIN
+if [[ -n "${@}" ]]; then
+    # quote source names in case they contain spaces
+    sources=(${${@/%/\"}[@]/#/\"})
+elif [[ ${ignorestdin} != y ]]; then
     cat > ${tmpfile1}
+    sources=(${tmpfile1})
 fi
 
-# place the input file(s) in {f} or pipe into the STDIN of the command
-local previewcmd cmdinput cmd2="${cmd}"
-if [[ ${cmd} == *\{f\}* && ${filebrace} != n && -n ${files} ]]; then
-    cmd="${cmd//\{f\}/${files[@]}}"
-elif [[ -n ${file} || -s ${tmpfile1} ]]; then
-    cmdinput="<${(q)file:-${tmpfile1}}"
+typeset cmdinput 
+if [[ ${cmd} != *\{f\}* || ${filebrace} == n ]]; then
+    # if the first source is a file we will send all sources to STDIN
+    if [[ -f ${sources[1]} ]]; then
+	cmd="${cmd}"
+	cmdinput="${sources[@]/#/<}"
+    else
+	# otherwise they are treated as args for the command
+	cmd="${cmd} ${sources[@]}"
+    fi
+else
+    if [[ -n ${sources} ]]; then
+	cmd="${cmd//\{f\}/${sources[@]}}"
+    else
+	print "Error: no sources to replace {f} in command string. Did you forget to use the -N option?"
+    fi
 fi
-# optionally display file info in preview window
-if [[ $showhdr == y ]]; then
-   previewcmd="echo 'NAME = ${file}' && stat -c 'SIZE = %s, PERMISSIONS = %U:%G:%A' ${file} && echo && "
+# optionally display source info in preview window
+typeset previewcmd src
+if [[ $showhdr == y && -n ${sources[@]} ]]; then
+    previewcmd="echo 'SOURCES: "
+    foreach src (${sources[@]}) {
+	src=${src//\"}
+	if [[ -f ${src} ]]; then
+	    previewcmd+="$(basename ${src})"
+	    if [[ -r ${src} ]]; then
+		previewcmd+="$(stat -c '(%s bytes)' ${src})"
+	    fi
+	    previewcmd+=", "
+	else
+	    previewcmd+="${src}, "
+	fi
+    }
+    previewcmd+="' && echo && "
 fi
 # optionally limit preview to head of file
-if [[ -n ${numlines} && ( -n ${file} || -s ${tmpfile1} ) ]]; then
-    if [[ -n ${files[@]} ]]; then
-	if [[ ${filebrace} == n ]]; then
-	    previewcmd+="{ head -n ${numlines} ${files[@]} | eval ${cmd2} }"
-	else
-	    previewcmd+="{ head -n ${numlines} ${files[@]} | eval ${cmd2//\{f\}} }"
-	fi
-    else
-	previewcmd+="{ head -n ${numlines} ${tmpfile1} | eval ${cmd2} }"
-    fi
+if [[ -n ${numlines} && -n ${cmdinput[@]} ]]; then
+	previewcmd+="{ head -n ${numlines} ${cmdinput[@]} | eval ${cmd} }"
 else
     previewcmd+="eval ${cmd} ${cmdinput}"
 fi
@@ -243,13 +260,15 @@ header2+=${header1[$i1,$i2]}
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 # Add keybinding for continuing the pipeline with fzftoolmenu, if available
 if [[ -a ${FZFTOOL_SRC} ]]; then
+    # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    #TODO: have another keybinding the same as above but with +abort appended?
 fi
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${files[@]}} >/dev/tty)'"
-# following command needs to be quoted differently to work with URLs containing spaces
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
+# following command is quoted differently to work with URLs containing spaces
 FZF_DEFAULT_OPTS+=" --bind \"alt-v:execute(eval '${(q)cmd} ${(q)cmdinput}' | ${PAGER} >/dev/tty)\""
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2})'"
