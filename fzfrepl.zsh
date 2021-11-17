@@ -264,8 +264,8 @@ FZF_DEFAULT_OPTS+=" --header='${header2}'"
 if [[ -a ${FZFTOOL_SRC} ]]; then
     # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    # as above but also quit current session
     FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
-    #TODO: have another keybinding the same as above but with +abort appended?
 fi
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
