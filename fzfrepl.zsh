@@ -21,20 +21,22 @@ fi
 # TODO: replace FILE with SOURCE
 usage() {
   less -FEXR <<'HELP'
-fzfrepl -c "CMD" [OPTION]... [FILE]...
-Interactively edit stdin using stream filters like awk, sed, jq, mlr. Uses STDIN if no FILE is supplied.
+fzfrepl -c "CMD {q}" [OPTION]... [SOURCE]...
+Interactively view output from CMD (e.g. a stream filter like awk or sed) while editing args using fzf.
+Each SOURCE may be a filename, URL or other input source argument to CMD.
+If no SOURCE is supplied, STDIN is used (unless the -i option is present).
 OPTIONS:
-  -c, --cmd CMDSTR        command string to filter input ({q} & {f} are replaced by query string & FILE)
+  -c, --cmd CMDSTR        command string to filter input ({q} & {s} are replaced by query string & SOURCEs)
   -q, --query QUERY       default query string to use (i.e. initial prompt input)
-  -o, --output [o|q]      output the stream filter output (o) or just the query string (q)
+  -o, --output [o|q]      output the command output (o) or just the query string (q)
                           (by default the command with embedded query string is output)
   -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
   -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
   -d, --header            show filename, size & permissions at top of preview window
   -n, --numlines N        No. of lines piped to preview command (all by default). Useful for large files.
-  -N, --no-file-subst     don't replace {f} with FILE(s)
-  -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are FILE args)
+  -N, --no-src-subst      don't replace {s} with SOURCEs
+  -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are SOURCE args)
   -h, --help              show this help text
 
 By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
@@ -48,8 +50,8 @@ To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--prev
 examples:
   echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'
   echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'
-  fzfrepl -c 'grep {q} {f}' /path/to/files/*.txt
-  fzfrepl -o o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
+  fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt
+  fzfrepl -o o -c 'sqlite3 -csv {s} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
   seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 HELP
 }
@@ -128,7 +130,7 @@ for arg; do
 	    showhdr=y
 	    shift 1;
 	    ;;
-	-N|--no-file-substitution)
+	-N|--no-src-subst)
 	    filebrace=n
 	    shift 1;
 	    ;;
@@ -168,7 +170,7 @@ elif [[ ${ignorestdin} != y ]]; then
 fi
 
 typeset cmdinput 
-if [[ ${cmd} != *\{f\}* || ${filebrace} == n ]]; then
+if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     # if the first source is a file we will send all sources to STDIN
     if [[ -f ${sources[1]} ]]; then
 	cmd="${cmd}"
@@ -179,9 +181,9 @@ if [[ ${cmd} != *\{f\}* || ${filebrace} == n ]]; then
     fi
 else
     if [[ -n ${sources} ]]; then
-	cmd="${cmd//\{f\}/${sources[@]}}"
+	cmd="${cmd//\{s\}/${sources[@]}}"
     else
-	print "Error: no sources to replace {f} in command string. Did you forget to use the -N option?"
+	print "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
     fi
 fi
 # optionally display source info in preview window
