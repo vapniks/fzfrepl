@@ -18,7 +18,7 @@ if [[ ! -w "${FZFREPL_DATADIR}" ]]; then
     print "Error: cannot write files to ${FZFREPL_DATADIR}"
     return 1
 fi
-# TODO: replace FILE with SOURCE
+
 usage() {
   less -FEXR <<'HELP'
 fzfrepl -c "CMD {q}" [OPTION]... [SOURCE]...
@@ -246,7 +246,7 @@ local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 # Fit header to fit screen
 local header1="${colors[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview window|RET:copy selection to prompt|M-w:copy prompt to clipboard|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${colors[reset]}"
 if [[ -a "${FZFTOOL_SRC}" ]]; then
-    header1="${header1//view output|/view output|alt-j:pipe output to another tool|}"
+    header1="${header1//view output|/view output|alt-j/k:pipe output to another tool and stay open/quit|}"
 fi
 local header2 i1=0 ncols=$((COLUMNS-5))
 local i2=${ncols}
@@ -264,6 +264,7 @@ FZF_DEFAULT_OPTS+=" --header='${header2}'"
 if [[ -a ${FZFTOOL_SRC} ]]; then
     # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
     #TODO: have another keybinding the same as above but with +abort appended?
 fi
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
