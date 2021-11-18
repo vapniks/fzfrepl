@@ -187,7 +187,7 @@ fi
 # optionally display source info in preview window
 typeset previewcmd src
 if [[ $showhdr == y && -n ${sources[@]} ]]; then
-    previewcmd="echo 'SOURCES: "
+    previewcmd="echo '"
     foreach src (${sources[@]}) {
 	src=${src//\"}
 	if [[ -f ${src} ]]; then
@@ -195,12 +195,13 @@ if [[ $showhdr == y && -n ${sources[@]} ]]; then
 	    if [[ -r ${src} ]]; then
 		previewcmd+="$(stat -c '(%s bytes)' ${src})"
 	    fi
-	    previewcmd+=", "
+	    previewcmd+="\n"
 	else
-	    previewcmd+="${src}, "
+	    previewcmd+="${src}\n"
 	fi
     }
-    previewcmd+="' && echo && "
+    # this assumes preview window is half the width of the screen
+    previewcmd+="${(l:((COLUMNS/2))::=:)}' && "
 fi
 # optionally limit preview to head of file
 if [[ -n ${numlines} && -n ${cmdinput[@]} ]]; then
