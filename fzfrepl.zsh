@@ -73,8 +73,6 @@ colors[reset]=$(tput sgr0)
 cleanup() {
     [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
     [[ -e "${tmpfile2}" ]] && rm "${tmpfile2}"
-    # TODO: do I really want to delete output?
-    [[ -e "${tmpfile3}" ]] && rm "${tmpfile3}"
 }
 trap cleanup SIGHUP SIGINT SIGTERM
 
