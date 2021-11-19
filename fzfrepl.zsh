@@ -3,9 +3,9 @@
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
 #       save pipeline to top of file? or separate file labelled by PID? (fzfrepl-$$.cmd?)
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
-local FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
+typeset -gx FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 local TMPDIR="${TMPDIR:-/tmp}"
-local FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
+typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
 # Check files & directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, and FZFREPL_COMMANDS is checked later)
 if [[ ! ( -d "${TMPDIR}" && -w "${TMPDIR}" ) ]]; then
     print "Error: cannot write files to TMPDIR=${TMPDIR}"
