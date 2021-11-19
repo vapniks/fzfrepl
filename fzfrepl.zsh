@@ -4,13 +4,8 @@
 #       save pipeline to top of file? or separate file labelled by PID? (fzfrepl-$$.cmd?)
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
 typeset -gx FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
-local TMPDIR="${TMPDIR:-/tmp}"
-typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR}}"
-# Check files & directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, and FZFREPL_COMMANDS is checked later)
-if [[ ! ( -d "${TMPDIR}" && -w "${TMPDIR}" ) ]]; then
-    print "Error: cannot write files to TMPDIR=${TMPDIR}"
-    return 1
-fi
+typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}"
+# Check directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, and FZFREPL_COMMANDS is checked later)
 if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
     mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
 fi
@@ -60,8 +55,9 @@ HELP
 # fzfrepl 'node -e {q}' -q "done = data => data;\nlet A='';process.stdin.on('data',x=>A=A.concat(x.toString())).on('end',()=>{let d = done(A);process.stdout.write(`${String.prototype.trim.call(typeof d==='string'?d:JSON.stringify(d,null,2))}\n`)})"
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
-local tmpfile2="${TMPDIR}/fzfrepl-shellhist"
+local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-shellhist"
 local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$.out"
+local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$.cmd"
 local cmd default_query output helpcmd1 removerx 
 local filebrace numlines showhdr ignorestdin
 
