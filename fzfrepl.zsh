@@ -170,7 +170,7 @@ fi
 typeset cmdinput 
 if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     # if the first source is a file we will send all sources to STDIN
-    if [[ -f ${sources[1]} ]]; then
+    if [[ -f ${(Q)sources[1]} ]]; then
 	cmd="${cmd}"
 	cmdinput="${sources[@]/#/<}"
     else
@@ -179,21 +179,23 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     fi
 else
     if [[ -n ${sources} ]]; then
-	cmd="${cmd//\{s\}/${sources[@]}}"
+	cmd="${cmd//\{s\}/${${@/%/\\\"}[@]/#/\\\"}}"
     else
 	print "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
     fi
 fi
+
 # optionally display source info in preview window
 typeset previewcmd src
 if [[ $showhdr == y && -n ${sources[@]} ]]; then
     previewcmd="echo '"
     foreach src (${sources[@]}) {
-	src=${src//\"}
-	if [[ -f ${src} ]]; then
-	    previewcmd+="$(basename ${src})"
-	    if [[ -r ${src} ]]; then
-		previewcmd+="$(stat -c '(%s bytes)' ${src})"
+	# (Q) flags are needed in ALL following lines to work with both quoted and unquoted filenames
+	src="${(Q)src}"
+	if [[ -f "${(Q)src}" ]]; then
+	    previewcmd+="$(basename ${(Q)src})"
+	    if [[ -r "${(Q)src}" ]]; then
+		previewcmd+="$(stat -c '(%s bytes)' ${(Q)src})"
 	    fi
 	    previewcmd+="\n"
 	else
@@ -266,12 +268,12 @@ if [[ -a ${FZFTOOL_SRC} ]]; then
     # as above but also quit current session
     FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
 fi
+
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
-# following command is quoted differently to work with URLs containing spaces
-FZF_DEFAULT_OPTS+=" --bind \"alt-v:execute(eval '${(q)cmd} ${(q)cmdinput}' | ${PAGER} >/dev/tty)\""
+FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2})'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
