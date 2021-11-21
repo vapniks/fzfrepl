@@ -56,8 +56,6 @@ HELP
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
 local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-shellhist"
-local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$.out"
-local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$.cmd"
 local cmd default_query output helpcmd1 removerx 
 local filebrace numlines showhdr ignorestdin
 
@@ -258,6 +256,9 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 # Add keybinding for continuing the pipeline with fzftoolmenu, if available
+local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.out"
+local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.cmd"
+
 if [[ -a ${FZFTOOL_SRC} ]]; then
     # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
     FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
