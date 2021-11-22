@@ -1,7 +1,6 @@
 #!/usr/bin/env zsh
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
-#       save pipeline to top of file? or separate file labelled by PID? (fzfrepl-$$.cmd?)
 local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
 typeset -gx FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
 typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}"
@@ -261,9 +260,9 @@ local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.cmd"
 
 if [[ -a ${FZFTOOL_SRC} ]]; then
     # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
-    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print ${cmd} \"${(q)cmdinput}\" > ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
     # as above but also quit current session
-    FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print ${cmd} \"${(q)cmdinput}\" > ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
 fi
 
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
@@ -281,7 +280,7 @@ IFS="
 "
 
 qry=($(cat "${FZFREPL_HISTORY}" |\
-	   fzf --query="$default_query" --sync --ansi --print-query \
+	   fzf --query="${default_query}" --sync --ansi --print-query \
 	       ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
 	       --preview="${previewcmd}"))
 
@@ -291,11 +290,13 @@ fi
 if [[ ${output} =~ [oO] ]]; then
     eval "${cmd//\{q\}/${qry[1]}} ${cmdinput}"
 elif [[ ${output} =~ [qQ] ]]; then
-    echo "${(Q)qry[1]}"
+    print - "${(Q)qry[1]}"
 else
-    echo "${cmd//\{q\}/${qry[1]}}"
+    print - "${cmd//\{q\}/${qry[1]}}" "${cmdinput}"
 fi
-
+# Save command to file
+print - "${cmd//\{q\}/${qry[1]}}" "${cmdinput}" > "${tmpfile4}"
+# Delete files no longer needed
 if [[ -e ${tmpfile1} ]]; then
    rm ${tmpfile1}
 fi
