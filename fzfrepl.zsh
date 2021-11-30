@@ -182,7 +182,7 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
 	    cat ${${${sources[1]##\"}%%\"}//out/cmd} >> "${tmpfile4}"
 	    print -n ' | ' >> "${tmpfile4}"
 	else
-	    cmdinstr="\"${(q)cmdinput}\""
+	    cmdinstr="${(q)cmdinput}"
 	fi
     else
 	# otherwise they are treated as args for the command
@@ -306,10 +306,10 @@ if [[ ${output} =~ [oO] ]]; then
 elif [[ ${output} =~ [qQ] ]]; then
     print - "${(Q)qry[1]}"
 else
-    print - "${cmdword}" "${cmd//\{q\}/${qry[1]}}" "${cmdinput}"
+    print - "${cmdword} ${cmd//\{q\}/${qry[1]}} ${cmdinput}"
 fi
 # Save command to file
-print - "${cmd//\{q\}/${qry[1]}}" "${cmdinstr}" >> "${tmpfile4}"
+print - "${cmd//\{q\}/${qry[1]}} ${cmdinstr}" >> "${tmpfile4}"
 # Delete files no longer needed
 if [[ -e ${tmpfile1} ]]; then
    rm ${tmpfile1}
