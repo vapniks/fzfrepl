@@ -175,7 +175,6 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
 	cmdinput="${sources[@]/#/<}"
 	# if its the only source, and is another fzfrepl file, then we
 	# are in an fzfrepl pipe, so save it to input pipe
-	print "sources[1] = ${sources[1]}" >> /tmp/fzfrepltest2
 	if [[ ${#sources} == 1 && ${sources[1]} == ?${FZFREPL_DATADIR}/fzfrepl*.out? ]]; then
 	    #TODO: debug this, it should save the previous command in the pipe, into the current commands file
 	    # but it doesn't currently work because ${sources[1]} is quoted
