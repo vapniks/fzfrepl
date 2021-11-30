@@ -160,12 +160,30 @@ elif [[ ${ignorestdin} != y ]]; then
     sources=(${tmpfile1})
 fi
 
-typeset cmdinput 
+local cmdword="${${(s: :)${cmd#sudo }}[1]}"
+# Files for storing the output, and the command line which creates that output
+local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.out"
+local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.cmd"
+touch "${tmpfile4}"
+chmod +x "${tmpfile4}"
+
+typeset cmdinput cmdinstr
 if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     # if the first source is a file we will send all sources to STDIN
     if [[ -f ${(Q)sources[1]} ]]; then
 	cmd="${cmd}"
 	cmdinput="${sources[@]/#/<}"
+	# if its the only source, and is another fzfrepl file, then we
+	# are in an fzfrepl pipe, so save it to input pipe
+	print "sources[1] = ${sources[1]}" >> /tmp/fzfrepltest2
+	if [[ ${#sources} == 1 && ${sources[1]} == ?${FZFREPL_DATADIR}/fzfrepl*.out? ]]; then
+	    #TODO: debug this, it should save the previous command in the pipe, into the current commands file
+	    # but it doesn't currently work because ${sources[1]} is quoted
+	    cat ${${${sources[1]##\"}%%\"}//out/cmd} >> "${tmpfile4}"
+	    print -n ' | ' >> "${tmpfile4}"
+	else
+	    cmdinstr="\"${(q)cmdinput}\""
+	fi
     else
 	# otherwise they are treated as args for the command
 	cmd="${cmd} ${sources[@]}"
@@ -205,7 +223,6 @@ else
     previewcmd+="eval ${cmd} ${cmdinput}"
 fi
 
-local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 : ${helpcmd1:=${cmdword} --help}
 : ${helpcmd2:=man ${cmdword}}
 : ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
@@ -255,14 +272,11 @@ header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 # Add keybinding for continuing the pipeline with fzftoolmenu, if available
-local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.out"
-local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.cmd"
-
 if [[ -a ${FZFTOOL_SRC} ]]; then
     # continue to fzftoolmenu even with non-zero exit status after saving output to ${tmpfile3}
-    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print ${cmd} \"${(q)cmdinput}\" > ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-j:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print -n ${cmd} ${cmdinstr} >> ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})'"
     # as above but also quit current session
-    FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print ${cmd} \"${(q)cmdinput}\" > ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-k:execute(eval ${cmd} ${cmdinput} > ${tmpfile3}; print -n ${cmd} ${cmdinstr} >> ${tmpfile4}; source ${FZFTOOL_SRC} && fzftoolmenu ${tmpfile3})+abort'"
 fi
 
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
@@ -292,10 +306,10 @@ if [[ ${output} =~ [oO] ]]; then
 elif [[ ${output} =~ [qQ] ]]; then
     print - "${(Q)qry[1]}"
 else
-    print - "${cmd//\{q\}/${qry[1]}}" "${cmdinput}"
+    print - "${cmdword}" "${cmd//\{q\}/${qry[1]}}" "${cmdinput}"
 fi
 # Save command to file
-print - "${cmd//\{q\}/${qry[1]}}" "${cmdinput}" > "${tmpfile4}"
+print - "${cmd//\{q\}/${qry[1]}}" "${cmdinstr}" >> "${tmpfile4}"
 # Delete files no longer needed
 if [[ -e ${tmpfile1} ]]; then
    rm ${tmpfile1}
