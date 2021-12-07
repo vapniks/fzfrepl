@@ -38,10 +38,10 @@ OPTIONS:
   -h, --help              show this help text
 
 Three different selection menus are available via keybindings alt-1/2/3, which can be
-altered by setting the FZFREPL_MENU1/2/3 variables. By default menu 1 contains history
-for this command, menu 2 contains saved commands, and menu 3 contains queries extracted
-from shell history (see the Readme file for more info). FZFREPL_MENU1 is loaded on startup.
-Pressing ctrl-s will save a query to $FZFREPL_MENU2 (reload it to see the saved query).
+altered by setting the FZFREPL_MENU1/2/3 variables. By default alt-1 loads history for
+this command from ${FZFREPL_HISTORY}, alt-2 loads saved commands, and alt-3 loads queries
+extracted from shell history (see the Readme file for more info). FZFREPL_MENU1 is loaded
+on startup. Pressing ctrl-s will save a query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
 
 examples:
@@ -58,7 +58,7 @@ HELP
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
 local tmpfile2="${FZFREPL_DATADIR}/fzfrepl_shellhist"
-local cmd default_query output helpcmd1 removerx 
+local cmd default_query output helpcmd1 helpcmd2 removerx
 local filebrace numlines showhdr ignorestdin
 
 typeset -A colors
@@ -225,8 +225,10 @@ else
     previewcmd+="eval ${cmd} ${cmdinput}"
 fi
 
+# set default values for help commands
 : ${helpcmd1:=${cmdword} --help}
 : ${helpcmd2:=man ${cmdword}}
+
 # fzfrepl history will be saved to this file
 : ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
 if [[ ! -e ${FZFREPL_HISTORY} ]]; then
@@ -297,8 +299,8 @@ if [[ -a ${FZFTOOL_SRC} ]]; then
 fi
 
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
-FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval $helpcmd1|${PAGER} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
+FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
