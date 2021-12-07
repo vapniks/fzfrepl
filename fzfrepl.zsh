@@ -33,14 +33,11 @@ OPTIONS:
   -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are SOURCE args)
   -h, --help              show this help text
 
-TODO: fix this!
-By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
-and its contents are available for selection by pressing alt-2. zsh shell history lines that
-match CMD, but not the -r option arg, 
-You can switch to the contents of ~/.fzfrepl/CMD_commands by pressing alt-2, or to filtered 
-zsh shell history (lines matching CMD but not the -r option arg) by pressing alt-3.
-To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or just FZFREPL_DIR.
-
+Three different selection menus are available via keybindings alt-1/2/3, which can be
+altered by setting the FZFREPL_MENU1/2/3 variables. By default menu 1 contains history
+for this command, menu 2 contains saved commands, and menu 3 contains queries extracted
+from shell history (see the Readme file for more info). FZFREPL_MENU1 is loaded on startup.
+Pressing ctrl-s will save a query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
 
 examples:
@@ -56,7 +53,7 @@ HELP
 # fzfrepl 'node -e {q}' -q "done = data => data;\nlet A='';process.stdin.on('data',x=>A=A.concat(x.toString())).on('end',()=>{let d = done(A);process.stdout.write(`${String.prototype.trim.call(typeof d==='string'?d:JSON.stringify(d,null,2))}\n`)})"
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
-local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-shellhist"
+local tmpfile2="${FZFREPL_DATADIR}/fzfrepl_shellhist"
 local cmd default_query output helpcmd1 removerx 
 local filebrace numlines showhdr ignorestdin
 
