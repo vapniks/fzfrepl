@@ -1,10 +1,14 @@
 #!/usr/bin/env zsh
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
-local FZFTOOL_SRC="${FZFTOOL_SRC:-~/.oh-my-zsh/custom/fzftool.zsh}"
-typeset -gx FZFREPL_DIR="${FZFREPL_DIR:-${HOME}/.fzfrepl}"
+
+# Location of fzftoolmenu source code, needed for alt-j/k keybinding
+: ${FZFTOOL_SRC:=~/.oh-my-zsh/custom/fzftool.zsh}
+# Menu files & history are stored in $FZFREPL_DIR
+: ${FZFREPL_DIR:=${HOME}/.fzfrepl}
+# Input & output files are stored in $FZFREPL_DATADIR (needs to be exported so fzftoolmenu can use it)
 typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}"
-# Check directories (fzf will check FZFREPL_HISTORY & FZFTOOL_SRC, and FZFREPL_COMMANDS is checked later)
+# Check FZFREPL_DATADIR (FZFREPL_HISTORY & FZFTOOL_SRC are checked later)
 if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
     mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
 fi
@@ -223,15 +227,12 @@ fi
 
 : ${helpcmd1:=${cmdword} --help}
 : ${helpcmd2:=man ${cmdword}}
+# fzfrepl history will be saved to this file
 : ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
-: ${FZFREPL_COMMANDS:=${FZFREPL_DIR}/${cmdword}_commands}
 if [[ ! -e ${FZFREPL_HISTORY} ]]; then
     touch ${FZFREPL_HISTORY}
 fi
-if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
-    touch ${FZFREPL_COMMANDS}
-fi
-# save items from zsh history for history selections (alt-1)
+# save items from zsh history for history selections
 HISTSIZE=10000
 fc -R ~/.zsh_history
 if [[ -n "${removerx}" ]]; then
@@ -240,11 +241,14 @@ else
     fc -l 1 | grep -o "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 fi
 # menu files which will be loaded when alt-1/2/3 is pressed
-typeset -gx FZFREPL_MENU1="${FZFREPL_MENU1:-${FZFREPL_COMMANDS}}"
-typeset -gx FZFREPL_MENU2="${FZFREPL_MENU2:-${FZFREPL_HISTORY}}"
-typeset -gx FZFREPL_MENU3="${FZFREPL_MENU3:-${tmpfile2}}"
+: ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
+: ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword}_commands}
+: ${FZFREPL_MENU3:=${tmpfile2}}
 # menu file where items will be saved when ctrl-s is pressed:
-typeset -gx FZFREPL_SAVE_MENU="${FZFREPL_SAVE_MENU:-${FZFREPL_MENU1}}"
+: ${FZFREPL_SAVE_MENU:=${FZFREPL_MENU2}}
+if [[ ! -e ${FZFREPL_SAVE_MENU} ]]; then
+    touch ${FZFREPL_SAVE_MENU}
+fi
 if [[ -r ${FZFREPL_MENU1} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_MENU1})'"
 else
