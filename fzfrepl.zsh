@@ -38,11 +38,12 @@ OPTIONS:
   -h, --help              show this help text
 
 Three different selection menus are available via keybindings alt-1/2/3, which can be
-altered by setting the FZFREPL_MENU1/2/3 variables. By default alt-1 loads query history for
+altered by setting the $FZFREPL_MENU1/2/3 variables. By default alt-1 loads query history for
 this command from ${FZFREPL_HISTORY}, alt-2 loads saved queries, and alt-3 loads queries
-extracted from shell history (see the Readme file for more info). FZFREPL_MENU1 is loaded
-on startup. Pressing ctrl-s will save a query to $FZFREPL_MENU2 (reload it to see the saved query).
+extracted from shell history. FZFREPL_MENU1 is loaded on startup. Pressing ctrl-s will save a
+query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
+See the Readme.org file for more info.
 
 examples:
   echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'
