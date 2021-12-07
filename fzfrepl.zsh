@@ -245,7 +245,7 @@ else
 fi
 # menu files which will be loaded when alt-1/2/3 is pressed
 : ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
-: ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword}_queries}
+: ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword}_menu}
 : ${FZFREPL_MENU3:=${tmpfile2}}
 # menu file where items will be saved when ctrl-s is pressed:
 : ${FZFREPL_SAVE_MENU:=${FZFREPL_MENU2}}
