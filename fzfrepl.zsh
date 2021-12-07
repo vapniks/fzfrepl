@@ -38,8 +38,8 @@ OPTIONS:
   -h, --help              show this help text
 
 Three different selection menus are available via keybindings alt-1/2/3, which can be
-altered by setting the FZFREPL_MENU1/2/3 variables. By default alt-1 loads history for
-this command from ${FZFREPL_HISTORY}, alt-2 loads saved commands, and alt-3 loads queries
+altered by setting the FZFREPL_MENU1/2/3 variables. By default alt-1 loads query history for
+this command from ${FZFREPL_HISTORY}, alt-2 loads saved queries, and alt-3 loads queries
 extracted from shell history (see the Readme file for more info). FZFREPL_MENU1 is loaded
 on startup. Pressing ctrl-s will save a query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
@@ -254,22 +254,22 @@ fi
 if [[ -r ${FZFREPL_MENU1} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_MENU1})'"
 else
-    print "Warning: unable to read commands from ${FZFREPL_MENU1}"
+    print "Warning: unable to read queries from ${FZFREPL_MENU1}"
 fi
 if [[ -r ${FZFREPL_MENU2} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_MENU2})'"
 else
-    print "Warning: unable to read commands from ${FZFREPL_MENU2}"
+    print "Warning: unable to read queries from ${FZFREPL_MENU2}"
 fi
 if [[ -r ${FZFREPL_MENU3} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-3:reload(cat ${FZFREPL_MENU3})'"
 else
-    print "Warning: unable to read commands from ${FZFREPL_MENU3}"
+    print "Warning: unable to read queries from ${FZFREPL_MENU3}"
 fi
 if [[ -w ${FZFREPL_SAVE_MENU} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_SAVE_MENU};then echo {q} >> ${FZFREPL_SAVE_MENU};fi)'"
 else
-    print "Warning: unable to save commands to ${FZFREPL_SAVE_MENU}"
+    print "Warning: unable to save queries to ${FZFREPL_SAVE_MENU}"
 fi
 
 local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
