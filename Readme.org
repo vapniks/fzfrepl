@@ -12,41 +12,52 @@ be hard to remember how to use.
 Interactively edit stdin using stream filters like *awk*, *sed*, *jq*, *mlr*. Uses STDIN if no FILE is supplied. 
 
 OPTIONS: \\
-  ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by query string & *FILE*)
+
+  ~-c, --cmd CMDSTR~        command string to filter input ({q} & {f} are replaced by query string & *SOURCES*)
   
   ~-q, --query QUERY~       default query string to use (i.e. initial prompt input)
   
-  ~-o, --output~            output the stream filter (otherwise just the command is printed)
+  ~-o, --output [o|q]~      output the command output (o) or just the query string (q)
+                            (by default the command with embedded query string is output)
   
   ~-H1, --helpcmd1 CMDSTR~  command for displaying help when alt-h is pressed (default: "CMD --help")
   
   ~-H2, --helpcmd2 CMDSTR~  command for displaying more help when ctrl-h is pressed (default: "man CMD")
   
-  ~-r, --remove REGEX~      regexp for filtering out shell history items (e.g. -i for sed)
+  ~-r, --remove REGEX~      regexp for filtering out shell history items (e.g. '-i' for sed)
 
   ~-d, --header~            show filename, size & permissions at top of preview window
   
   ~-n, --numlines N~        No. of lines piped to preview command (all by default). Useful for large files.
   
-  ~-N, --no-file-subst~     don't replace {f} with FILE(s)
+  ~-N, --no-file-subst~     don't replace {s} with SOURCE(s)
 
-  ~-i, --ignore-stdin~      ignore any input from STDIN (STDIN is also ignored if there are FILE args)
+  ~-i, --ignore-stdin~      ignore any input from STDIN (STDIN is also ignored if there are SOURCE args)
   
   ~-h, --help~              show this help text
 
-By default fzfrepl history is saved to *~/.fzfrepl/CMD_history* (when *CMD* is the main command word),
-and its contents are available for selection in the main screen, or by pressing alt-1.
-You can switch to the contents of *~/.fzfrepl/CMD_commands* by pressing alt-2, or to filtered 
-zsh shell history (lines matching *CMD* but not the -r option arg) by pressing alt-3.
-To change the location of these files set *FZFREPL_HISTORY* & *FZFREPL_COMMANDS*, or just *FZFREPL_DIR*.
-
-To alter fzf options set *FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--preview-window=down:50%~"
+Three different selection menus are available via keybindings alt-1/2/3, which can be
+altered by setting the *$FZFREPL_MENU1/2/3* variables to files containing menu entries.
+The default values for these menus are as follows:
+ *$FZFREPL_MENU1* (alt-1) is set to *$FZFREPL_HISTORY* which should be a file to load/save query history
+   for the current command.
+ *$FZFREPL_MENU2* (alt-2) is set to *${FZFREPL_DIR}/CMD_queries* which is used to save the current query
+   when ctrl-s is pressed (this can be changed by setting *$FZFREPL_SAVE_MENU*).
+ *$FZFREPL_MENU3* (alt-3) is set to a temporary file in which items extracted from shell history are
+   saved.
+On startup *$FZFREPL_MENU1* is loaded. Pressing ctrl-s will save a query to *$FZFREPL_MENU2* (reload it
+to see the saved query), and when a query is accepted (by pressing ctrl-j) it is save to *$FZFREPL_HISTORY*.
+Output files are saved to *$FZFREPL_DATADIR/fzfrepl-$$-CMD.out*, and the command line is saved to
+*$FZFREPL_DATADIR/fzfrepl-$$-CMD.cmd* (where $$ is the PID, and CMD is the command name). These files
+are used by recursive calls to fzfrepl via fzftoolmenu (alt-j/k).
+To alter fzf options set *$FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--preview-window=down:50%~"
+See below for more info about these variables.
 
 *** Examples
  - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
  - echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
- - fzfrepl -c 'grep {q} {f}' /path/to/files/*.txt
- - fzfrepl -o -c 'sqlite3 -csv {f} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
+ - fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt
+ - fzfrepl -o -c 'sqlite3 -csv {s} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
  - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 
 Here is a more advanced example which is useful for building/debugging ffmpeg filtergraphs.
@@ -54,29 +65,34 @@ You need to have [[https://ffmpeg.org/][ffmpeg]], [[https://video.stackexchange.
 The preview window will display a diagram of the filtergraph entered at the prompt (the current query string).
 You can store useful filtergraphs in the ~/.fzfrepl/ffmpeg_filters file, and browse them by pressing Alt+2:
 
-FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_COMMANDS=~/.fzfrepl/ffmpeg_filters fzfrepl -i -H1 "ffmpeg -filters" -H2 "man ffmpeg-filters" -o q -c "echo \"{q}\"|graph2dot|graph-easy --boxart"
+FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpeg_filters fzfrepl -i -H1 "ffmpeg -filters" -H2 "man ffmpeg-filters" -o q -c "echo \"{q}\"|graph2dot|graph-easy --boxart"
 
 ** Keybindings
-| Ctrl+t | toggle preview window (to reveal the full header which lists keybindings)                        |
-| Ctrl+j | accept query string and print command line or its output (if -o option was used)                 |
-| Alt+w  | Copy query string to clipboard                                                                   |
-| Ctrl+k | kill line                                                                                        |
-| RET    | copy current selection to prompt                                                                 |
-| home   | move pointer back to first selection                                                             |
-| Alt+1  | Switch selections to selections history (stored in *$FZFREPL_HISTORY* file)                      |
-| Alt+2  | Switch selections to contents of *$FZFREPL_COMMANDS* file                                        |
-| Alt+3  | Switch selections to filtered shell history (lines matching command name, but not -r option arg) |
-| Ctrl+s | Save current query string into the current *$FZFREPL_COMMANDS* file                              |
-| Alt+h  | Show main help page (see the -H1 option in the usage section)                                    |
-| Ctrl+h | Show alternate help page (see the -H2 option in the usage section)                               |
-| Ctrl+v | View full input with *$PAGER*                                                                    |
-| Alt+v  | View output with *$PAGER* (using all input lines, and full screen)                               |
+| RET    | copy current selection to prompt                                                                        |
+| ctrl-t | toggle preview window (to reveal the full header which lists keybindings)                               |
+| ctrl-j | accept query string and print command line or its output (if -o option was used)                        |
+| alt-j  | pipe output to fzftoolmenu (if available)                                                               |
+| alt-k  | pipe output to fzftoolmenu (if available), and quit                                                     |
+| alt-w  | Copy query string to clipboard                                                                          |
+| ctrl-k | kill line                                                                                               |
+| home   | move pointer back to first selection                                                                    |
+| alt-1  | Load 1st selections menu from $FZFREPL_MENU1 (set to *$FZFREPL_HISTORY* by default)                     |
+| alt-2  | Load 2nd selections menu from $FZFREPL_MENU2 (set to ~/.fzfrepl/CMD_menu by default)                    |
+| alt-3  | Load 3rd selections menu from $FZFREPL_MENU3 (set to file containing filtered shell history by default) |
+| ctrl-s | Save current query string into the file at *$FZFREPL_SAVE_MENU*                                         |
+| alt-h  | Show main help page (see the -H1 option in the usage section)                                           |
+| ctrl-h | Show alternate help page (see the -H2 option in the usage section)                                      |
+| ctrl-v | View full input with *$PAGER*                                                                           |
+| alt-v  | View output with *$PAGER* (using all input lines, and full screen)                                      |
 ** Files & environment variables
-| *$FZFREPL_DIR*          | directory used by default for history & stored input line files (default: ~/.fzfrepl)                   |
-| *$FZFREPL_COMMANDS*     | file containing stored input lines for current base command (default: *$FZFREPL_DIR/CMD_commands*)      |
-| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)   |
-| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                               |
-| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt (colons will be replaced by commas) |
+| *$FZFREPL_DIR*          | directory used by default for history & stored menu files (default: ~/.fzfrepl)                                          |
+| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                    |
+| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                                                |
+| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt                                                      |
+| *$FZFREPL_MENU1*        | file containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                    |
+| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries*                                |
+| *$FZFREPL_MENU3*        | file containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history |
+| *$FZFREPL_SAVE_MENU*    | file where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                          |
 Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
@@ -91,7 +107,7 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
   - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
     e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
   - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
-    don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing Alt+v).
+    don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing alt-v).
     Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
     entirety.
   - It is tempting put extra quotes around the {q} in the command string, e.g. -c "awk '{q}'". However this causes
@@ -105,7 +121,7 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
     the selections window easier). However you may need to delete any comment before accepting the command line or it may
     comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
     comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
-    Press Ctrl+s to store the current query string into the *$FZFREPL_COMMANDS* file.
+    Press ctrl-s to store the current query string into the *$FZFREPL_COMMANDS* file.
   - If you prefer to always see all available selections (i.e. don't filter them with the query string) you can set
     the value of *$FZFREPL_DEFAULT_OPTS* to include '--phony'.
 
