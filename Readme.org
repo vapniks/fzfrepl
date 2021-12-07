@@ -71,8 +71,8 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 | RET    | copy current selection to prompt                                                                        |
 | ctrl-t | toggle preview window (to reveal the full header which lists keybindings)                               |
 | ctrl-j | accept query string and print command line or its output (if -o option was used)                        |
-| alt-j  | pipe output to fzftoolmenu (if available)                                                               |
-| alt-k  | pipe output to fzftoolmenu (if available), and quit                                                     |
+| alt-j  | pipe output to fzftoolmenu (if available). See pipelines section below.                                 |
+| alt-k  | pipe output to fzftoolmenu (if available), and quit. See pipelines section below.                       |
 | alt-w  | Copy query string to clipboard                                                                          |
 | ctrl-k | kill line                                                                                               |
 | home   | move pointer back to first selection                                                                    |
@@ -86,25 +86,32 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 | alt-v  | View output with *$PAGER* (using all input lines, and full screen)                                      |
 ** Files & environment variables
 | *$FZFREPL_DIR*          | directory used by default for history & stored menu files (default: ~/.fzfrepl)                                          |
+| *$FZFREPL_DATADIR*      | directory used for storing input, output & command files (default /tmp)                                                  |
 | *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                    |
 | *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                                                |
 | *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt                                                      |
 | *$FZFREPL_MENU1*        | file containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                    |
-| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries*                                |
+| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries* where CMD is the base command  |
 | *$FZFREPL_MENU3*        | file containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history |
 | *$FZFREPL_SAVE_MENU*    | file where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                          |
 Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
+** Input/output & use in pipelines
+You can use fzfrepl in a pipeline; it accepts input on STDIN, and sends output to STDOUT if the "-o o" option is used.
+Alternatively if you have fzftool installed you can create a pipeline which uses fzfrepl at each stage.
+If you press alt-j/k you will be prompted for the next command in the pipeline using fzftool, which could be
+another invocation of fzfrepl from which you could again press alt-j/k to extend the pipeline further.
+At each stage the output file will be saved to *${FZFREPL_DATADIR}/fzfrepl-$$-CMD.out* where $$ is the PID of the
+command (also displayed to the left of the fzfrepl query prompt), and CMD is the base command name.
+Also the pipeline of fzfrepl commands that led upto the current invocation will be saved to *${FZFREPL_DATADIR}/fzfrepl-$$-CMD.cmd*
+The input to the current fzfrepl invocation is stored in *${FZFREPL_DATADIR}/fzfrepl-$$-CMD.in*
 ** Tips
-  - For commands such as sqlite3 where the filename comes before the other arguments you can use "{f}" in the
+  - For commands such as sqlite3 where the filename comes before the other arguments you can use "{s}" in the
     command string which will be replaced by the FILE arg.
-  - When used in conjuction with fzf_tool_launcher you can save the output by first viewing it with the pager
-    (e.g. less), and then using the pagers facility to save its input to a file.
-  - If you supply multiple FILE args on the command line, then only the first one will be used unless you put "{f}"
-    in your command string, in which case it will be replaced by the list of FILE args. This makes it possible
-    to use grep multiple files using fzf: fzfrepl -c "grep {q} {f}" FILE1 FILE2...
-  - Store fzfrepl commands in global aliases (which can be used in pipeline) so you don't have to memorize them,
+  - When used in conjuction with fzftool you can save the output by first viewing it with a pager (e.g. less),
+    and then using the pagers facility to save its input to a file.
+  - Store fzfrepl commands in global aliases (which can be used in a pipeline) so you don't have to memorize them,
     e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
   - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
     don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing alt-v).
@@ -117,11 +124,11 @@ The following options cannot be overridden: --query, --sync, --ansi, --print-que
     it doesn't get mistaken for another fzfrepl option by the option parsing code.
   - If both the fzf prompt and query selections list are empty no preview will be generated.
     In this case you can type a single space to generate a preview.
-  - Lines of the *$FZFREPL_COMMANDS* file can have comments appended to help you remember what they do (and make searching
+  - Lines of the *$FZFREPL_MENU2* file can have comments appended to help you remember what they do (and make searching
     the selections window easier). However you may need to delete any comment before accepting the command line or it may
     comment out the input redirection. For certain command such as *awk* & *sed* you can avoid this problem by keeping the
     comment within the quotes of the command, e.g: sed -n "1,10p #print first 10 lines".
-    Press ctrl-s to store the current query string into the *$FZFREPL_COMMANDS* file.
+    Press ctrl-s to store the current query string into the *$FZFREPL_MENU2* file.
   - If you prefer to always see all available selections (i.e. don't filter them with the query string) you can set
     the value of *$FZFREPL_DEFAULT_OPTS* to include '--phony'.
 
