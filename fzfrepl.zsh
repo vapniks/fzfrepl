@@ -33,8 +33,10 @@ OPTIONS:
   -i, --ignore-stdin	  ignore any input from STDIN (STDIN is also ignored if there are SOURCE args)
   -h, --help              show this help text
 
+TODO: fix this!
 By default fzfrepl history is saved to ~/.fzfrepl/CMD_history (when CMD is the main command word),
-and its contents are available for selection in the main screen, or by pressing alt-1.
+and its contents are available for selection by pressing alt-2. zsh shell history lines that
+match CMD, but not the -r option arg, 
 You can switch to the contents of ~/.fzfrepl/CMD_commands by pressing alt-2, or to filtered 
 zsh shell history (lines matching CMD but not the -r option arg) by pressing alt-3.
 To change the location of these files set FZFREPL_HISTORY & FZFREPL_COMMANDS, or just FZFREPL_DIR.
@@ -231,17 +233,6 @@ if [[ ! -e ${FZFREPL_HISTORY} ]]; then
 fi
 if [[ ! -e ${FZFREPL_COMMANDS} ]]; then
     touch ${FZFREPL_COMMANDS}
-else
-    if [[ -r ${FZFREPL_COMMANDS} ]]; then
-	FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_COMMANDS})'"
-    else
-	print "Warning: unable to read commands from ${FZFREPL_COMMANDS}"
-    fi
-    if [[ -w ${FZFREPL_COMMANDS} ]]; then
-	FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_COMMANDS};then echo {q} >> ${FZFREPL_COMMANDS};fi)'"
-    else
-	print "Warning: unable to save commands to ${FZFREPL_COMMANDS}"
-    fi
 fi
 # save items from zsh history for history selections (alt-1)
 HISTSIZE=10000
@@ -250,6 +241,32 @@ if [[ -n "${removerx}" ]]; then
     fc -l 1 | grep -o "\<${cmdword} .*" | grep -v "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 else
     fc -l 1 | grep -o "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+fi
+# menu files which will be loaded when alt-1/2/3 is pressed
+typeset -gx FZFREPL_MENU1="${FZFREPL_MENU1:-${FZFREPL_COMMANDS}}"
+typeset -gx FZFREPL_MENU2="${FZFREPL_MENU2:-${FZFREPL_HISTORY}}"
+typeset -gx FZFREPL_MENU3="${FZFREPL_MENU3:-${tmpfile2}}"
+# menu file where items will be saved when ctrl-s is pressed:
+typeset -gx FZFREPL_SAVE_MENU="${FZFREPL_SAVE_MENU:-${FZFREPL_MENU1}}"
+if [[ -r ${FZFREPL_MENU1} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_MENU1})'"
+else
+    print "Warning: unable to read commands from ${FZFREPL_MENU1}"
+fi
+if [[ -r ${FZFREPL_MENU2} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_MENU2})'"
+else
+    print "Warning: unable to read commands from ${FZFREPL_MENU2}"
+fi
+if [[ -r ${FZFREPL_MENU3} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-3:reload(cat ${FZFREPL_MENU3})'"
+else
+    print "Warning: unable to read commands from ${FZFREPL_MENU3}"
+fi
+if [[ -w ${FZFREPL_SAVE_MENU} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_SAVE_MENU};then echo {q} >> ${FZFREPL_SAVE_MENU};fi)'"
+else
+    print "Warning: unable to save commands to ${FZFREPL_SAVE_MENU}"
 fi
 
 local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
@@ -284,7 +301,6 @@ FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval $helpcmd2|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
-FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_HISTORY}),alt-3:reload(cat ${tmpfile2})'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
 FZF_DEFAULT_OPTS+=" ${FZFREPL_DEFAULT_OPTS}"
 
@@ -292,7 +308,7 @@ local -a qry
 IFS="
 "
 
-qry=($(cat "${FZFREPL_HISTORY}" |\
+qry=($(cat "${FZFREPL_MENU1}" |\
 	   fzf --query="${default_query}" --sync --ansi --print-query \
 	       ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
 	       --preview="${previewcmd}"))
