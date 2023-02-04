@@ -275,7 +275,7 @@ fi
 
 local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 # Fit header to fit screen
-local header1="${colors[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview window|RET:copy selection to prompt|M-w:copy prompt to clipboard|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${colors[reset]}"
+local header1="${colors[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview|C-/:rotate preview|RET:copy selection to prompt|M-w:copy cmd to clipboard|C-s:save cmd to menu|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${colors[reset]}"
 if [[ -a "${FZFTOOL_SRC}" ]]; then
     header1="${header1//view output|/view output|alt-j/k:pipe output to another tool and stay open/quit|}"
 fi
@@ -300,6 +300,7 @@ if [[ -a ${FZFTOOL_SRC} ]]; then
 fi
 
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-/:change-preview-window(right,50%|down,50%)'"
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"

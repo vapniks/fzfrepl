@@ -70,6 +70,7 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 ** Keybindings
 | RET    | copy current selection to prompt                                                                        |
 | ctrl-t | toggle preview window (to reveal the full header which lists keybindings)                               |
+| ctrl-/ | rotate preview window (between vertical and horizontal positions)                                       |
 | ctrl-j | accept query string and print command line or its output (if -o option was used)                        |
 | alt-j  | pipe output to fzftoolmenu (if available). See pipelines section below.                                 |
 | alt-k  | pipe output to fzftoolmenu (if available), and quit. See pipelines section below.                       |
