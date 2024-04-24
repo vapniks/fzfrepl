@@ -1,7 +1,7 @@
 * fzfrepl
 Edit commands/pipelines with [[https://github.com/junegunn/fzf][fzf]], and view live output while editing.
 
-This is a rewrite of Daniel Grey's fantastic [[https://github.com/DanielFGray/fzf-scripts/blob/master/fzrepl][fzrepl]] written for zsh instead of bash.
+This is a rewrite of Daniel Gray's fantastic [[https://github.com/DanielFGray/fzf-scripts/blob/master/fzrepl][fzrepl]] written for zsh instead of bash.
 This version uses the selections window for command line args instead of input.
 It gives you quick access to shell history, stored arguments, and help pages, so you have no excuse for getting the syntax wrong for a particular command.
 This makes it very useful for data processing pipelines with tools such as sed, awk & [[https://github.com/johnkerl/miller][miller]] which, though powerful, can
