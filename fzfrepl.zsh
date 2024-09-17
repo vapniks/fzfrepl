@@ -300,7 +300,10 @@ if [[ -a ${FZFTOOL_SRC} ]]; then
 fi
 
 FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-preview,ctrl-k:kill-line,home:top'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-/:change-preview-window(right,50%|down,50%)'"
+# For some unknown reason change-preview-window doesn't work for root user
+if ! [[ $USER = root ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'ctrl-/:change-preview-window(right,50%|down,50%)'"
+fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
