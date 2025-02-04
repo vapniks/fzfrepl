@@ -2,7 +2,7 @@
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
 
-# Location of fzftoolmenu source code, needed for alt-j/k keybinding
+# Location of fzftool source code, needed for alt-j/k keybinding
 : ${FZFTOOL_SRC:=~/.oh-my-zsh/custom/fzftool.zsh}
 # Menu files & history are stored in $FZFREPL_DIR
 : ${FZFREPL_DIR:=${HOME}/.fzfrepl}
@@ -43,14 +43,15 @@ this command from ${FZFREPL_HISTORY}, alt-2 loads saved queries, and alt-3 loads
 extracted from shell history. FZFREPL_MENU1 is loaded on startup. Pressing ctrl-s will save a
 query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
+You can also specify shell options in FZFREPL_SHELLOPTS which will be passed to setopt (e.g. extendedglob).
 See the Readme.org file for more info.
 
-examples:
-  echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'
-  echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'
-  fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt
-  fzfrepl -o o -c 'sqlite3 -csv {s} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
-  seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
+EXAMPLES (see Readme.org file for more):
+  FZFREPL_SHELLOPTS=extendedglob fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn"  # test glob patterns interactively
+  fzfrepl -c "print - {q}" -N -i -H1 "man zshexpn"                            # test parameter expansion interactively
+  fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt                              # test grep commands interactively
+  echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'                         # test sed commands interactively
+  echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'                     # test awk commands interactively
 HELP
 }
 
@@ -219,9 +220,12 @@ if [[ $showhdr == y && -n ${sources[@]} ]]; then
     # this assumes preview window is half the width of the screen
     previewcmd+="${(l:((COLUMNS/2))::=:)}' && "
 fi
+
 # optionally limit preview to head of file
 if [[ -n ${numlines} && -n ${cmdinput[@]} ]]; then
-	previewcmd+="{ head -n ${numlines} ${cmdinput[@]} | eval ${cmd} }"
+    previewcmd+="{ head -n ${numlines} ${cmdinput[@]} | eval ${cmd} }"
+elif [[ -n ${FZFREPL_SHELLOPTS} ]]; then
+    previewcmd+="( setopt ${FZFREPL_SHELLOPTS}; eval ${cmd} ${cmdinput} )"    
 else
     previewcmd+="eval ${cmd} ${cmdinput}"
 fi
@@ -307,7 +311,11 @@ fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+if [[ -n ${FZFREPL_SHELLOPTS} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(setopt ${FZFREPL_SHELLOPTS}; eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+else
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
 FZF_DEFAULT_OPTS+=" ${FZFREPL_DEFAULT_OPTS}"

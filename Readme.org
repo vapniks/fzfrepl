@@ -54,11 +54,20 @@ To alter fzf options set *$FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--
 See below for more info about these variables.
 
 *** Examples
- - echo 'foo bar' | fzfrepl -o -c 'awk {q}' -q '{print}'
- - echo 'hello world' | fzfrepl -o -q p 'sed -n {q}'
- - fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt
- - fzfrepl -o -c 'sqlite3 -csv {s} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv cat'
- - seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
+ - Test glob patterns interactively:
+     $ FZFREPL_SHELLOPTS=extendedglob fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn"
+ - Test parameter expansion interactively:
+     $ fzfrepl -c "print - {q}" -N -i -H1 "man zshexpn"
+ - Test awk commands interactively:
+     $ echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'
+ - Test sed commands interactively:
+     $ echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'
+ - Test grep commands interactively:
+     $ fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt
+ - Test sqlite3 commands interatively, and then test mlr stats2 commands interactively on the output of sqlite3:
+     $ fzfrepl -o o -c 'sqlite3 -csv {s} {q}' mydatabase.db | mlr -o -c 'mlr {q}' -q '--csv stats2'
+ - Test feedgnuplot options interactively:
+     $ seq 5 | awk '{print 2*$1,$1*$1}' | fzfrepl -c "feedgnuplot --terminal \\\"dumb ${COLUMNS},${LINES}\\\" --exit {q}"
 
 Here is a more advanced example which is useful for building/debugging ffmpeg filtergraphs.
 You need to have [[https://ffmpeg.org/][ffmpeg]], [[https://video.stackexchange.com/questions/21017/ffmpeg-graph2dot-tool][graph2dot]] and [[https://metacpan.org/pod/Graph::Easy][graph-easy]] installed.
@@ -86,15 +95,16 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 | ctrl-v | View full input with *$PAGER*                                                                           |
 | alt-v  | View output with *$PAGER* (using all input lines, and full screen)                                      |
 ** Files & environment variables
-| *$FZFREPL_DIR*          | directory used by default for history & stored menu files (default: ~/.fzfrepl)                                          |
-| *$FZFREPL_DATADIR*      | directory used for storing input, output & command files (default /tmp)                                                  |
-| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                    |
-| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                                                |
-| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt                                                      |
-| *$FZFREPL_MENU1*        | file containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                    |
-| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries* where CMD is the base command  |
-| *$FZFREPL_MENU3*        | file containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history |
-| *$FZFREPL_SAVE_MENU*    | file where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                          |
+| *$FZFREPL_DIR*          | directory used by default for history & stored menu files (default: ~/.fzfrepl)                                             |
+| *$FZFREPL_DATADIR*      | directory used for storing input, output & command files (default /tmp)                                                     |
+| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                       |
+| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                                                   |
+| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt                                                         |
+| *$FZFREPL_MENU1*        | file containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                       |
+| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries* where CMD is the base command     |
+| *$FZFREPL_MENU3*        | file containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history    |
+| *$FZFREPL_SAVE_MENU*    | file where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                             |
+| *$FZFREPL_SHELLOPTS*    | zsh shell options to be passed to setopt before evaluating the command. These do not take effect if input is piped to STDIN |
 Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview
