@@ -55,7 +55,7 @@ See below for more info about these variables.
 
 *** Examples
  - Test glob patterns interactively:
-     $ FZFREPL_SHELLOPTS=extendedglob fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn"
+     $ FZFREPL_PRECMD="setopt extendedglob" fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn"
  - Test parameter expansion interactively:
      $ fzfrepl -c "print - {q}" -N -i -H1 "man zshexpn"
  - Test awk commands interactively:
@@ -95,16 +95,16 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 | ctrl-v | View full input with *$PAGER*                                                                           |
 | alt-v  | View output with *$PAGER* (using all input lines, and full screen)                                      |
 ** Files & environment variables
-| *$FZFREPL_DIR*          | directory used by default for history & stored menu files (default: ~/.fzfrepl)                                             |
-| *$FZFREPL_DATADIR*      | directory used for storing input, output & command files (default /tmp)                                                     |
-| *$FZFREPL_HISTORY*      | file containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                       |
-| *$FZFREPL_DEFAULT_OPTS* | options for fzf which override or add to the default ones                                                                   |
-| *$FZFREPL_HEADER*       | set this to change the header text displayed above/below the prompt                                                         |
-| *$FZFREPL_MENU1*        | file containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                       |
-| *$FZFREPL_MENU2*        | file containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries* where CMD is the base command     |
-| *$FZFREPL_MENU3*        | file containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history    |
-| *$FZFREPL_SAVE_MENU*    | file where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                             |
-| *$FZFREPL_SHELLOPTS*    | zsh shell options to be passed to setopt before evaluating the command. These do not take effect if input is piped to STDIN |
+| *$FZFREPL_DIR*          | Directory used by default for history & stored menu files (default: ~/.fzfrepl)                                                         |
+| *$FZFREPL_DATADIR*      | Directory used for storing input, output & command files (default /tmp)                                                                 |
+| *$FZFREPL_HISTORY*      | File containing history of input lines for current base command (default: *$FZFREPL_DIR/CMD_history*)                                   |
+| *$FZFREPL_DEFAULT_OPTS* | Options for fzf which override or add to the default ones                                                                               |
+| *$FZFREPL_HEADER*       | Set this to change the header text displayed above/below the prompt                                                                     |
+| *$FZFREPL_MENU1*        | File containing entries for default menu (alt-1). Default value is *$FZFREPL_HISTORY*                                                   |
+| *$FZFREPL_MENU2*        | File containing entries for menu 2 (alt-2). Default value is *${FZFREPL_DIR}/CMD_queries* where CMD is the base command                 |
+| *$FZFREPL_MENU3*        | File containing entries for menu 3 (alt-3). Default value is temp file populated with items extracted from shell history                |
+| *$FZFREPL_SAVE_MENU*    | File where queries are saved when ctrl-s is pressed, by default this is set to *$FZFREPL_MENU2*                                         |
+| *$FZFREPL_PRECMD*       | Command string to be run before evaluating CMDSTR, e.g. for setting shell options. This does not take effect if input is piped to STDIN |
 Note: *$FZF_DEFAULT_OPTS* are applied first, followed by the fzfrepl specific options defined in the source file,
 followed by *$FZFREPL_DEFAULT_OPTS*.
 The following options cannot be overridden: --query, --sync, --ansi, --print-query, --history, --preview

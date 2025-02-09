@@ -44,15 +44,16 @@ this command from ${FZFREPL_HISTORY}, alt-2 loads saved queries, and alt-3 loads
 extracted from shell history. FZFREPL_MENU1 is loaded on startup. Pressing ctrl-s will save a
 query to $FZFREPL_MENU2 (reload it to see the saved query).
 To alter fzf options set FZFREPL_DEFAULT_OPTS, e.g. FZFREPL_DEFAULT_OPTS="--preview-window=down:50%"
-You can also specify shell options in FZFREPL_SHELLOPTS which will be passed to setopt (e.g. extendedglob).
+You can also specify a command to run before evaluating CMDSTR in FZFREPL_PRECMD. This is useful if you need
+to setup some shell options or parameters, e.g. "setopt extendedglob".
 See the Readme.org file for more info.
 
 EXAMPLES (see Readme.org file for more):
-  FZFREPL_SHELLOPTS=extendedglob fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn"  # test glob patterns interactively
-  fzfrepl -c "print - {q}" -N -i -H1 "man zshexpn"                            # test parameter expansion interactively
-  fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt                              # test grep commands interactively
-  echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'                         # test sed commands interactively
-  echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'                     # test awk commands interactively
+  FZFREPL_PRECMD="setopt extendedglob" fzfrepl -c "ls {q}" -N -i -H1 "man zshexpn" # test glob patterns interactively
+  fzfrepl -c "print - {q}" -N -i -H1 "man zshexpn"                                 # test parameter expansion interactively
+  fzfrepl -c 'grep {q} {s}' /path/to/files/*.txt                                   # test grep commands interactively
+  echo 'hello world' | fzfrepl -o o -q p 'sed -n {q}'                              # test sed commands interactively
+  echo 'foo bar' | fzfrepl -o o -c 'awk {q}' -q '{print}'                          # test awk commands interactively
 HELP
 }
 
@@ -225,8 +226,8 @@ fi
 # optionally limit preview to head of file
 if [[ -n ${numlines} && -n ${cmdinput[@]} ]]; then
     previewcmd+="{ head -n ${numlines} ${cmdinput[@]} | eval ${cmd} }"
-elif [[ -n ${FZFREPL_SHELLOPTS} ]]; then
-    previewcmd+="( setopt ${FZFREPL_SHELLOPTS}; eval ${cmd} ${cmdinput} )"    
+elif [[ -n ${FZFREPL_PRECMD} ]]; then
+    previewcmd+="(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput} )"    
 else
     previewcmd+="eval ${cmd} ${cmdinput}"
 fi
@@ -312,8 +313,8 @@ fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
 FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
-if [[ -n ${FZFREPL_SHELLOPTS} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(setopt ${FZFREPL_SHELLOPTS}; eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+if [[ -n ${FZFREPL_PRECMD} ]]; then
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
 else
     FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
 fi
