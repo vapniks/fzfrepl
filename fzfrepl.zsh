@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
+#  can fzfrepl be combined with zfzf somehow?
 
 # Location of fzftool source code, needed for alt-j/k keybinding
 : ${FZFTOOL_SRC:=~/.oh-my-zsh/custom/fzftool.zsh}

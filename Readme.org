@@ -123,7 +123,11 @@ The input to the current fzfrepl invocation is stored in *${FZFREPL_DATADIR}/fzf
   - When used in conjuction with fzftool you can save the output by first viewing it with a pager (e.g. less),
     and then using the pagers facility to save its input to a file.
   - Store fzfrepl commands in global aliases (which can be used in a pipeline) so you don't have to memorize them,
-    e.g: alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
+    examples:
+    - alias -g fzfglob='${~${fzfglob::=$(fzfrepl -o q -c "ls {q}" -N -i -H1 "man zshexpn"|sed "s/ \# .*\$//")}}'
+      (for finding & testing glob patterns)
+    - alias -g mlrfzf 'fzfrepl -c "mlr {q}" -q " --csv"'
+      (for processing csv files)
   - For large text/csv files use the --numlines option to limit the number of lines used for the preview so you
     don't have to wait ages for it to refresh. This will not affect the overal output (seen by pressing alt-v).
     Note however that this option is not useful for json, xml or other filetypes that need to be parsed in their
