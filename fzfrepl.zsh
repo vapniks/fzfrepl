@@ -171,8 +171,7 @@ if [[ -n "${@}" ]]; then
     sources=(${${@/%/\"}[@]/#/\"})
 elif [[ ${ignorestdin} != y ]]; then
     if [[ -t 0 ]]; then
-	print -u2 "Warning: no piped or redirected input on STDIN - nothing read.
-If this is intended you should use the -i option."
+	print -u2 "Error: no piped or redirected input on STDIN - nothing read. If this is intended you should use the -i option."
 	exit 1
     else
 	cat > ${tmpfile1}
