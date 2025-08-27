@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
-#  can fzfrepl be combined with zfzf somehow?
+#  can fzfrepl be combined with zfzf somehow? manpage?
 
 # Location of fzftool source code, needed for alt-j/k keybinding
 : ${FZFTOOL_SRC:=~/.oh-my-zsh/custom/fzftool.zsh}
@@ -163,8 +163,14 @@ if [[ -n "${@}" ]]; then
     # quote source names in case they contain spaces
     sources=(${${@/%/\"}[@]/#/\"})
 elif [[ ${ignorestdin} != y ]]; then
-    cat > ${tmpfile1}
-    sources=(${tmpfile1})
+    if [[ -t 0 ]]; then
+	print -u2 "Warning: no piped or redirected input on STDIN - nothing read.
+If this is intended you should use the -i option."
+	exit 1
+    else
+	cat > ${tmpfile1}
+	sources=(${tmpfile1})
+    fi
 fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
@@ -310,13 +316,13 @@ FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-prev
 if ! [[ $USER = root ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'ctrl-/:change-preview-window(right,50%|down,50%)'"
 fi
-FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER} >/dev/tty)'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}} >/dev/tty)'"
+FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER})'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER})'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}})'"
 if [[ -n ${FZFREPL_PRECMD} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput}|${PAGER})'"
 else
-    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER} >/dev/tty)'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER})'"
 fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
