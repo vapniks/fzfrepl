@@ -7,6 +7,13 @@
 : ${FZFTOOL_SRC:=~/.oh-my-zsh/custom/fzftool.zsh}
 # Menu files & history are stored in $FZFREPL_DIR
 : ${FZFREPL_DIR:=${HOME}/.fzfrepl}
+if [[ ! -a $FZFREPL_DIR ]]; then
+    mkdir $FZFREPL_DIR
+fi
+if [[ ! -d $FZFREPL_DIR ]]; then
+    print - "Error: $FZFREPL_DIR should be a directory"
+    return 1
+fi
 # Input & output files are stored in $FZFREPL_DATADIR (needs to be exported so fzftoolmenu can use it)
 typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}"
 # Check FZFREPL_DATADIR (FZFREPL_HISTORY & FZFTOOL_SRC are checked later)
