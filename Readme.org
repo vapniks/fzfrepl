@@ -49,7 +49,7 @@ On startup *$FZFREPL_MENU1* is loaded. Pressing ctrl-s will save a query to *$FZ
 to see the saved query), and when a query is accepted (by pressing ctrl-j) it is save to *$FZFREPL_HISTORY*.
 Output files are saved to *$FZFREPL_DATADIR/fzfrepl-$$-CMD.out*, and the command line is saved to
 *$FZFREPL_DATADIR/fzfrepl-$$-CMD.cmd* (where $$ is the PID, and CMD is the command name). These files
-are used by recursive calls to fzfrepl via fzftoolmenu (alt-j/k).
+are used by recursive calls to fzfrepl via fzftool (alt-j/k).
 To alter fzf options set *$FZFREPL_DEFAULT_OPTS*, e.g. ~FZFREPL_DEFAULT_OPTS="--preview-window=down:50%~"
 See below for more info about these variables.
 
@@ -81,8 +81,8 @@ FZFREPL_HISTORY=~/.fzfrepl/ffmpeg_filters_history FZFREPL_MENU2=~/.fzfrepl/ffmpe
 | ctrl-t | toggle preview window (to reveal the full header which lists keybindings)                               |
 | ctrl-/ | rotate preview window (between vertical and horizontal positions)                                       |
 | ctrl-j | accept query string and print command line or its output (if -o option was used)                        |
-| alt-j  | pipe output to fzftoolmenu (if available). See pipelines section below.                                 |
-| alt-k  | pipe output to fzftoolmenu (if available), and quit. See pipelines section below.                       |
+| alt-j  | pipe output to fzftool (if available). See pipelines section below.                                     |
+| alt-k  | pipe output to fzftool (if available), and quit. See pipelines section below.                           |
 | alt-w  | Copy query string to clipboard                                                                          |
 | ctrl-k | kill line                                                                                               |
 | home   | move pointer back to first selection                                                                    |
