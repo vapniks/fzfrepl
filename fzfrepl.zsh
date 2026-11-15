@@ -99,6 +99,7 @@ die() {
     exit 1
 }
 
+# TODO: this breaks of cmd follows -o, use zparseopts, getopts or a while loop instead.
 for arg; do
     case $1 in
 	-q|--query)
@@ -175,7 +176,7 @@ elif [[ ${ignorestdin} != y ]]; then
 	exit 1
     else
 	cat > ${tmpfile1}
-	sources=(${tmpfile1})
+	sources=("${${tmpfile1/%/\\\"}/#/\\\"}")
     fi
 fi
 
@@ -208,9 +209,10 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     fi
 else
     if [[ -n ${sources} ]]; then
-	cmd="${cmd//\{s\}/${${@/%/\\\"}[@]/#/\\\"}}"
+	cmd="${cmd//\{s\}/${sources[@]}}"
     else
 	print "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
+	exit 1
     fi
 fi
 
