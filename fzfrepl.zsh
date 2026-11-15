@@ -182,8 +182,8 @@ fi
 
 local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 # Files for storing the output, and the command line which creates that output
-local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.out"
-local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword}.cmd"
+local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword:t}.out"
+local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword:t}.cmd"
 touch "${tmpfile4}"
 chmod +x "${tmpfile4}"
 
@@ -248,10 +248,10 @@ fi
 
 # set default values for help commands
 : ${helpcmd1:=${cmdword} --help}
-: ${helpcmd2:=man ${cmdword}}
+: ${helpcmd2:=man ${cmdword:t}}
 
 # fzfrepl history will be saved to this file
-: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword}_history}
+: ${FZFREPL_HISTORY:=${FZFREPL_DIR}/${cmdword:t}_history}
 if [[ ! -e ${FZFREPL_HISTORY} ]]; then
     touch ${FZFREPL_HISTORY}
 fi
@@ -259,14 +259,14 @@ fi
 HISTSIZE=10000
 fc -R ~/.zsh_history
 if [[ -n "${removerx}" ]]; then
-    fc -l 1 | grep -o -e "\<${cmdword} .*" | grep -v -e "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o -e "\<${cmdword:t} .*" | grep -v -e "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 else
-    fc -l 1 | grep -o -e "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o -e "\<${cmdword:t} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 fi
 # menu files which will be loaded when alt-1/2/3 is pressed
 : ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
 # TODO: make this more specific with an assoc array of regexps (for matching command lines) & corresponding filenames
-: ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword}_menu}
+: ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword:t}_menu}
 : ${FZFREPL_MENU3:=${tmpfile2}}
 # menu file where items will be saved when ctrl-s is pressed:
 : ${FZFREPL_SAVE_MENU:=${FZFREPL_MENU2}}
