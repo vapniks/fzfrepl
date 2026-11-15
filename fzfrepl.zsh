@@ -257,9 +257,9 @@ fi
 HISTSIZE=10000
 fc -R ~/.zsh_history
 if [[ -n "${removerx}" ]]; then
-    fc -l 1 | grep -o "\<${cmdword} .*" | grep -v "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o -e "\<${cmdword} .*" | grep -v -e "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 else
-    fc -l 1 | grep -o "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+    fc -l 1 | grep -o -e "\<${cmdword} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
 fi
 # menu files which will be loaded when alt-1/2/3 is pressed
 : ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
@@ -287,7 +287,7 @@ else
     print "Warning: unable to read queries from ${FZFREPL_MENU3}"
 fi
 if [[ -w ${FZFREPL_SAVE_MENU} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fqs {q} ${FZFREPL_SAVE_MENU};then echo {q} >> ${FZFREPL_SAVE_MENU};fi)'"
+    FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fxqs -e {q} ${FZFREPL_SAVE_MENU};then printf \"%s\n\" {q} >> ${FZFREPL_SAVE_MENU};fi)'"
 else
     print "Warning: unable to save queries to ${FZFREPL_SAVE_MENU}"
 fi
