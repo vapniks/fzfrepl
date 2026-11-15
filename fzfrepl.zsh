@@ -263,6 +263,7 @@ else
 fi
 # menu files which will be loaded when alt-1/2/3 is pressed
 : ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
+# TODO: make this more specific with an assoc array of regexps (for matching command lines) & corresponding filenames
 : ${FZFREPL_MENU2:=${FZFREPL_DIR}/${cmdword}_menu}
 : ${FZFREPL_MENU3:=${tmpfile2}}
 # menu file where items will be saved when ctrl-s is pressed:
@@ -338,6 +339,10 @@ local -a qry
 IFS="
 "
 
+# DEBUG
+#print -- ${(q)FZF_DEFAULT_OPTS}
+#return 1
+
 qry=($(cat "${FZFREPL_MENU1}" |\
 	   fzf --query="${default_query}" --sync --ansi --print-query \
 	       ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
@@ -351,7 +356,7 @@ if [[ ${output} =~ [oO] ]]; then
 elif [[ ${output} =~ [qQ] ]]; then
     print - "${(Q)qry[1]}"
 else
-    print - "${cmdword} ${cmd//\{q\}/${qry[1]}} ${cmdinput}"
+    print - "${cmd//\{q\}/${qry[1]}} ${cmdinput}"
 fi
 # Save command to file
 print - "${cmd//\{q\}/${qry[1]}} ${cmdinstr}" >> "${tmpfile4}"
