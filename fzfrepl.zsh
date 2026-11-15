@@ -198,7 +198,7 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
 	if [[ ${#sources} == 1 && ${sources[1]} == ?${FZFREPL_DATADIR}/fzfrepl*.out? ]]; then
 	    #TODO: debug this, it should save the previous command in the pipe, into the current commands file
 	    # but it doesn't currently work because ${sources[1]} is quoted
-	    cat ${${${sources[1]##\"}%%\"}//out/cmd} >> "${tmpfile4}"
+	    cat ${${${sources[1]##\"}%%\"}/%.out/.cmd} >> "${tmpfile4}"
 	    print -n ' | ' >> "${tmpfile4}"
 	else
 	    cmdinstr="${(q)cmdinput}"
