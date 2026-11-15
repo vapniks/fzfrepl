@@ -325,13 +325,13 @@ FZF_DEFAULT_OPTS+=" --bind 'enter:replace-query,ctrl-j:accept,ctrl-t:toggle-prev
 if ! [[ $USER = root ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'ctrl-/:change-preview-window(right,50%|down,50%)'"
 fi
-FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER})'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER})'"
-FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER} ${cmdinput:-${sources[@]}})'"
+FZF_DEFAULT_OPTS+=" --bind 'alt-h:execute(eval ${helpcmd1}|${PAGER:-less})'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-h:execute(eval ${helpcmd2}|${PAGER:-less})'"
+FZF_DEFAULT_OPTS+=" --bind 'ctrl-v:execute(${PAGER:-less} ${cmdinput:-${sources[@]}})'"
 if [[ -n ${FZFREPL_PRECMD} ]]; then
-    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput}|${PAGER})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput}|${PAGER:-less})'"
 else
-    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER})'"
+    FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER:-less})'"
 fi
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
