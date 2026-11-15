@@ -86,7 +86,7 @@ trap cleanup SIGHUP SIGINT SIGTERM
 color() {
   local color
   color="$1"; shift
-  printf '%s' "${colors[$color]}" "$*" "${colors[reset]}"
+  printf '%s\n' "${colors[$color]}" "$*" "${colors[reset]}"
 }
 
 err() {
