@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+# This file should be run directly, not sourced
 # TODO: save pipeline to file? (using fzftool, appending to previous pipeline?)
 #  can fzfrepl be combined with zfzf somehow? manpage?
 
@@ -11,18 +12,18 @@ if [[ ! -a $FZFREPL_DIR ]]; then
     mkdir $FZFREPL_DIR
 fi
 if [[ ! -d $FZFREPL_DIR ]]; then
-    print - "Error: $FZFREPL_DIR should be a directory"
-    return 1
+    print -u2 "Error: $FZFREPL_DIR should be a directory"
+    exit 1
 fi
 # Input & output files are stored in $FZFREPL_DATADIR (needs to be exported so fzftoolmenu can use it)
 typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}/fzfrepl"
 # Check FZFREPL_DATADIR (FZFREPL_HISTORY & FZFTOOL_SRC are checked later)
 if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
-    mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
+    mkdir "${FZFREPL_DATADIR}" || { print -u2 "Error: cannot create directory ${FZFREPL_DATADIR}" && exit 1 }
 fi
 if [[ ! -w "${FZFREPL_DATADIR}" ]]; then
-    print "Error: cannot write files to ${FZFREPL_DATADIR}"
-    return 1
+    print -u2 "Error: cannot write files to ${FZFREPL_DATADIR}"
+    exit 1
 fi
 
 usage() {
@@ -214,7 +215,7 @@ else
     if [[ -n ${sources} ]]; then
 	cmd="${cmd//\{s\}/${sources[@]}}"
     else
-	print "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
+	print -u2 "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
 	exit 1
     fi
 fi
@@ -279,22 +280,22 @@ fi
 if [[ -r ${FZFREPL_MENU1} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-1:reload(cat ${FZFREPL_MENU1})'"
 else
-    print "Warning: unable to read queries from ${FZFREPL_MENU1}"
+    print -u2 "Warning: unable to read queries from ${FZFREPL_MENU1}"
 fi
 if [[ -r ${FZFREPL_MENU2} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-2:reload(cat ${FZFREPL_MENU2})'"
 else
-    print "Warning: unable to read queries from ${FZFREPL_MENU2}"
+    print -u2 "Warning: unable to read queries from ${FZFREPL_MENU2}"
 fi
 if [[ -r ${FZFREPL_MENU3} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'alt-3:reload(cat ${FZFREPL_MENU3})'"
 else
-    print "Warning: unable to read queries from ${FZFREPL_MENU3}"
+    print -u2 "Warning: unable to read queries from ${FZFREPL_MENU3}"
 fi
 if [[ -w ${FZFREPL_SAVE_MENU} ]]; then
     FZF_DEFAULT_OPTS+=" --bind 'ctrl-s:execute-silent(if ! grep -Fxqs -e {q} ${FZFREPL_SAVE_MENU};then printf \"%s\n\" {q} >> ${FZFREPL_SAVE_MENU};fi)'"
 else
-    print "Warning: unable to save queries to ${FZFREPL_SAVE_MENU}"
+    print -u2 "Warning: unable to save queries to ${FZFREPL_SAVE_MENU}"
 fi
 
 local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
