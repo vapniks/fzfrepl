@@ -305,16 +305,18 @@ local header1="${fg[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle prev
 if [[ -a "${FZFTOOL_SRC}" ]]; then
     header1="${header1//view output|/view output|alt-j/k:pipe output to another tool and stay open/quit|}"
 fi
-local header2 i1=1 ncols=$((COLUMNS-5))
-local i2=${ncols}
-until ((i2>${#header1})); do
-    i2=${${header1[${i1:-1},${i2}]}[(I)\|]}
-    header2+="${header1[${i1},((i1+i2-1))]}
-"
-    i1=$((i1+i2+1))
-    i2=$((i1+ncols))
+
+local keystr header2
+local -i linelen=0 ncols=$((COLUMNS-2))
+local -a header3=("${(s:|:)header1}")
+for keystr in ${header3[@]}; do
+    ((linelen += ${(m)#keystr} + 1))
+    if ((linelen>ncols)); then
+	header2+=$'\n'
+	linelen=${#keystr}
+    fi
+    header2+="${keystr}|"
 done
-header2+=${header1[$i1,$i2]}
 
 FZF_DEFAULT_OPTS+=" --header='${header2}'"
 # Add keybinding for continuing the pipeline with fzftoolmenu, if available
