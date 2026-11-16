@@ -224,14 +224,15 @@ fi
 # optionally display source info in preview window
 typeset previewcmd src
 if [[ $showhdr == y && -n ${sources[@]} ]]; then
+    zmodload -F zsh/stat b:zstat # TODO: move to top of script?
     previewcmd="echo '"
     foreach src (${sources[@]}) {
 	# (Q) flags are needed in ALL following lines to work with both quoted and unquoted filenames
 	src="${(Q)src}"
 	if [[ -f "${(Q)src}" ]]; then
-	    previewcmd+="$(basename ${(Q)src})"
+	    previewcmd+="${(Q)src:t}"
 	    if [[ -r "${(Q)src}" ]]; then
-		previewcmd+="$(stat -c '(%s bytes)' ${(Q)src})"
+		previewcmd+=" ($(zstat +size ${(Q)src}) bytes)"
 	    fi
 	    previewcmd+="\n"
 	else
@@ -239,6 +240,7 @@ if [[ $showhdr == y && -n ${sources[@]} ]]; then
 	fi
     }
     # this assumes preview window is half the width of the screen
+    # TODO: work out preview window size and remove this assumption
     previewcmd+="${(l:((COLUMNS/2))::=:)}' && "
 fi
 
