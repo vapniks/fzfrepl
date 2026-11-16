@@ -73,10 +73,11 @@ local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-$$.shellhist"
 local cmd default_query output helpcmd1 helpcmd2 removerx
 local filebrace numlines showhdr ignorestdin
 
-typeset -A colors
-colors[red]=$(tput setaf 1)
-colors[green]=$(tput setaf 2)
-colors[reset]=$(tput sgr0)
+# Make sure $fg and $reset_color are loaded
+if ! { (( $+fg )) && (( $+reset_color )) }; then
+     autoload -Uz colors && colors
+     (( $+fg && $+reset_color )) || print -u2 "Warning: failed to load colors"
+fi
 
 cleanup() {
     [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
@@ -90,7 +91,7 @@ trap 'exit 129' SIGHUP
 color() {
   local color
   color="$1"; shift
-  printf '%s\n' "${colors[$color]}" "$*" "${colors[reset]}"
+  printf '%s\n' "${fg[$color]}" "$*" "${reset_color}"
 }
 
 err() {
@@ -300,14 +301,14 @@ fi
 
 local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
 # Fit header to fit screen
-local header1="${colors[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview|C-/:rotate preview|RET:copy selection to prompt|M-w:copy cmd to clipboard|C-s:save cmd to menu|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${colors[reset]}"
+local header1="${fg[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview|C-/:rotate preview|RET:copy selection to prompt|M-w:copy cmd to clipboard|C-s:save cmd to menu|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${reset_color}"
 if [[ -a "${FZFTOOL_SRC}" ]]; then
     header1="${header1//view output|/view output|alt-j/k:pipe output to another tool and stay open/quit|}"
 fi
-local header2 i1=0 ncols=$((COLUMNS-5))
+local header2 i1=1 ncols=$((COLUMNS-5))
 local i2=${ncols}
 until ((i2>${#header1})); do
-    i2=${${header1[${i1:-0},${i2}]}[(I)\|]}
+    i2=${${header1[${i1:-1},${i2}]}[(I)\|]}
     header2+="${header1[${i1},((i1+i2-1))]}
 "
     i1=$((i1+i2+1))
