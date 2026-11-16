@@ -39,7 +39,7 @@ OPTIONS:
                           (by default the command with embedded query string is output)
   -H1, --helpcmd1 CMDSTR  command for displaying help when alt-h is pressed (default: "CMD --help")
   -H2, --helpcmd2 CMDSTR  command for displaying more help when ctrl-h is pressed (default: "man CMD")
-  -r, --remove REGEX      regexp for filtering out shell history items (e.g. '-i' for sed)
+  -r, --remove PATTERN    pattern for filtering out shell history items (e.g. '* -i *' for sed)
   -d, --header            show filename, size & permissions at top of preview window
   -n, --numlines N        No. of lines piped to preview command (all by default). Useful for large files.
   -N, --no-src-subst      don't replace {s} with SOURCEs
@@ -70,7 +70,7 @@ HELP
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
 local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-$$.shellhist"
-local cmd default_query output helpcmd1 helpcmd2 removerx
+local cmd default_query output helpcmd1 helpcmd2 filterpat
 local filebrace numlines showhdr ignorestdin
 
 # Make sure $fg and $reset_color are loaded
@@ -130,7 +130,7 @@ for arg; do
 	    shift 2
 	    ;;
 	-r|--remove)
-	    removerx="$2"
+	    filterpat="$2"
 	    shift 2
 	    ;;
 	-n|--numlines)
@@ -262,12 +262,16 @@ if [[ ! -e ${FZFREPL_HISTORY} ]]; then
 fi
 # save items from zsh history for history selections
 HISTSIZE=10000
-fc -R ~/.zsh_history
-if [[ -n "${removerx}" ]]; then
-    fc -l 1 | grep -o -e "\<${cmdword:t} .*" | grep -v -e "${removerx}" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+fc -R $HISTFILE
+# TODO: have an option (zstyle or parameter) to select between using sort or uniq in following lines
+# (uniq preserves recency order, but only removes adjacent duplicates whereas sort removes all duplicates,
+# but doesn't preserve recency order)
+if [[ -n "${filterpat}" ]]; then
+    print -l -- ${${${(M)history:#${cmdword:t} *}#${cmdword:t}}:#${filterpat}} | sort -u > "${tmpfile2}"
 else
-    fc -l 1 | grep -o -e "\<${cmdword:t} .*" | sort -u | cut -d" " -f 1 --complement > "${tmpfile2}"
+    print -l -- ${${(M)history:#${cmdword:t} *}#${cmdword:t}} | sort -u > "${tmpfile2}"
 fi
+
 # menu files which will be loaded when alt-1/2/3 is pressed
 : ${FZFREPL_MENU1:=${FZFREPL_HISTORY}}
 # TODO: make this more specific with an assoc array of regexps (for matching command lines) & corresponding filenames
