@@ -239,9 +239,8 @@ if [[ $showhdr == y && -n ${sources[@]} ]]; then
 	    previewcmd+="${src}\n"
 	fi
     }
-    # this assumes preview window is half the width of the screen
-    # TODO: work out preview window size and remove this assumption
-    previewcmd+="${(l:((COLUMNS/2))::=:)}' && "
+    # put row of ='s under list of sources
+    previewcmd+="${(l:((COLUMNS))::=:)}' && "
 fi
 
 # optionally limit preview to head of file
