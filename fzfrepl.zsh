@@ -81,7 +81,10 @@ cleanup() {
     [[ -e "${tmpfile1}" ]] && rm "${tmpfile1}"
     [[ -e "${tmpfile2}" ]] && rm "${tmpfile2}"
 }
-trap cleanup SIGHUP SIGINT SIGTERM
+trap cleanup EXIT
+trap 'exit 130' SIGINT
+trap 'exit 143' SIGTERM
+trap 'exit 129' SIGHUP
 
 color() {
   local color
