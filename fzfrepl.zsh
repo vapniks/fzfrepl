@@ -15,7 +15,7 @@ if [[ ! -d $FZFREPL_DIR ]]; then
     return 1
 fi
 # Input & output files are stored in $FZFREPL_DATADIR (needs to be exported so fzftoolmenu can use it)
-typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}"
+typeset -gx FZFREPL_DATADIR="${FZFREPL_DATADIR:-${TMPDIR:-/tmp}}/fzfrepl"
 # Check FZFREPL_DATADIR (FZFREPL_HISTORY & FZFTOOL_SRC are checked later)
 if [[ ! -d "${FZFREPL_DATADIR}" ]]; then
     mkdir "${FZFREPL_DATADIR}" || { print "Error: cannot create directory ${FZFREPL_DATADIR}" && return 1 }
