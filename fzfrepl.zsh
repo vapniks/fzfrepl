@@ -68,7 +68,7 @@ HELP
 # fzfrepl 'node -e {q}' -q "done = data => data;\nlet A='';process.stdin.on('data',x=>A=A.concat(x.toString())).on('end',()=>{let d = done(A);process.stdout.write(`${String.prototype.trim.call(typeof d==='string'?d:JSON.stringify(d,null,2))}\n`)})"
 
 local tmpfile1="${FZFREPL_DATADIR}/fzfrepl-$$.in"
-local tmpfile2="${FZFREPL_DATADIR}/fzfrepl_shellhist"
+local tmpfile2="${FZFREPL_DATADIR}/fzfrepl-$$.shellhist"
 local cmd default_query output helpcmd1 helpcmd2 removerx
 local filebrace numlines showhdr ignorestdin
 
