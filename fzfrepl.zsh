@@ -347,14 +347,14 @@ IFS="
 
 # DEBUG
 #print -- ${(q)FZF_DEFAULT_OPTS}
-#return 1
+#exit 1
 
-qry=($(cat "${FZFREPL_MENU1}" |\
-	   fzf --query="${default_query}" --sync --ansi --print-query \
-	       ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
-	       --preview="${previewcmd}"))
+qry=("${(@f)$(fzf --query="${default_query}" --sync --ansi --print-query \
+		  ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
+		  --preview="${previewcmd}" < $FZFREPL_MENU1)}")
 
-if [[ -z ${qry} ]]; then
+if ((?==130)); then
+    print -u2 "Aborted"
     exit
 fi
 if [[ ${output} =~ [oO] ]]; then
