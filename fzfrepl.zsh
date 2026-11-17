@@ -137,6 +137,10 @@ for arg; do
 	    ;;
 	-n|--numlines)
 	    numlines="$2"
+	    if [[ ! $numlines == [0-9]## ]]; then
+		print -- "option -n needs a number"
+		exit 1
+	    fi
 	    shift 2
 	    ;;
 	-d|--header)
