@@ -310,7 +310,7 @@ else
     print -u2 "Warning: unable to save queries to ${FZFREPL_SAVE_MENU}"
 fi
 
-local prompt="($$)${${cmd//\{q\}}:0:15} ${${${${cmd//\{q\}}:15}:-}:+... }"
+local prompt="($$)${${cmd//\{q\}}:0:15} ${${${cmd//\{q\}}:15}:+... }"
 # Fit header to fit screen
 local header1="${fg[green]}${FZFREPL_HEADER:-C-g:quit|C-j:finish|C-t:toggle preview|C-/:rotate preview|RET:copy selection to prompt|M-w:copy cmd to clipboard|C-s:save cmd to menu|C-v:view input|M-v:view output|M-1/2/3:change selections|M-h:show help|C-h:show more help}${reset_color}"
 if [[ -a "${FZFTOOL_SRC}" ]]; then
@@ -351,6 +351,7 @@ if [[ -n ${FZFREPL_PRECMD} ]]; then
 else
     FZF_DEFAULT_OPTS+=" --bind 'alt-v:execute(eval ${cmd} ${cmdinput}|${PAGER:-less})'"
 fi
+# TODO: can we remove the xclip dependency here? (e.g. it doesn't work on wayland)
 FZF_DEFAULT_OPTS+=" --bind 'alt-w:execute-silent(echo ${cmd}|xclip -selection clipboard)'"
 FZF_DEFAULT_OPTS+=" --preview-window=right:50% --height=100% --prompt '${prompt}'"
 FZF_DEFAULT_OPTS+=" ${FZFREPL_DEFAULT_OPTS}"
