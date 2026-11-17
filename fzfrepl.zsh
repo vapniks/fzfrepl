@@ -177,17 +177,17 @@ fi
 
 # non-option args are treated as input sources
 typeset -a sources
-# If there are no sources use STDIN
+
 if [[ -n "${@}" ]]; then
     # quote source names in case they contain spaces
-    sources=(${${@/%/\"}[@]/#/\"})
-elif [[ ${ignorestdin} != y ]]; then
+    sources=("${(q)@}")
+elif [[ ${ignorestdin} != y ]]; then # if there are no sources use STDIN
     if [[ -t 0 ]]; then
 	print -u2 "Error: no piped or redirected input on STDIN - nothing read. If this is intended you should use the -i option."
 	exit 1
     else
 	cat > ${tmpfile1}
-	sources=("${${tmpfile1/%/\\\"}/#/\\\"}")
+	sources=(${tmpfile1})
     fi
 fi
 
@@ -195,15 +195,15 @@ local cmdword="${${(s: :)${cmd#sudo }}[1]}"
 # Files for storing the output, and the command line which creates that output
 local tmpfile3="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword:t}.out"
 local tmpfile4="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword:t}.cmd"
+local tmpfile5="${FZFREPL_DATADIR}/fzfrepl-$$-${cmdword:t}.prev"
 touch "${tmpfile4}"
 chmod +x "${tmpfile4}"
 
-typeset cmdinput cmdinstr
+typeset cmdinput cmdinstr prevcmd
 if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
     # if the first source is a file we will send all sources to STDIN
-    if [[ -f ${(Q)sources[1]} ]]; then
-	cmd="${cmd}"
-	cmdinput="${sources[@]/#/<}"
+    if [[ -f ${(Q)sources[1]} ]]; then # not sure why unquoting is necessary here, but it is
+	cmdinput="${(q)sources[@]/#/<}"
 	# if its the only source, and is another fzfrepl file, then we
 	# are in an fzfrepl pipe, so save it to input pipe
 	if [[ ${#sources} == 1 && ${sources[1]} == ?${FZFREPL_DATADIR}/fzfrepl*.out? ]]; then
@@ -212,15 +212,27 @@ if [[ ${cmd} != *\{s\}* || ${filebrace} == n ]]; then
 	    cat ${${${sources[1]##\"}%%\"}/%.out/.cmd} >> "${tmpfile4}"
 	    print -n ' | ' >> "${tmpfile4}"
 	else
-	    cmdinstr="${(q)cmdinput}"
+	    cmdinstr="${cmdinput}"
+	fi
+	if [[ -n ${numlines} ]]; then
+	    prevcmd="head -q -n $numlines ${sources[@]} | eval ${cmd}"
+	else
+	    prevcmd="eval ${cmd} ${cmdinput}"
 	fi
     else
-	# otherwise they are treated as args for the command
+	# otherwise (no STDIN) they are treated as args for the command
 	cmd="${cmd} ${sources[@]}"
+	prevcmd="${cmd}"
     fi
 else
-    if [[ -n ${sources} ]]; then
-	cmd="${cmd//\{s\}/${sources[@]}}"
+    if [[ -n ${sources[@]} ]]; then
+	if [[ -n ${numlines} && -f ${(Q)sources[1]} ]]; then
+	    head -q -n $numlines ${(Q)sources[@]} > $tmpfile5
+	    prevcmd="eval ${cmd//\{s\}/${tmpfile5}}"
+	else
+	    prevcmd="eval ${cmd//\{s\}/${(q)sources[@]}}"
+	fi
+	cmd="${cmd//\{s\}/${(q)sources[@]}}"
     else
 	print -u2 "Error: no sources to replace {s} in command string. Did you forget to use the -N option?"
 	exit 1
@@ -228,34 +240,31 @@ else
 fi
 
 # optionally display source info in preview window
-typeset previewcmd src
-if [[ $showhdr == y && -n ${sources[@]} ]]; then
+typeset fullprevcmd src
+if [[ $showhdr == y && -n ${sources[@]} && -f ${sources[1]} ]]; then
     zmodload -F zsh/stat b:zstat # TODO: move to top of script?
-    previewcmd="echo '"
+    fullprevcmd="echo '"
     foreach src (${sources[@]}) {
 	# (Q) flags are needed in ALL following lines to work with both quoted and unquoted filenames
 	src="${(Q)src}"
 	if [[ -f "${(Q)src}" ]]; then
-	    previewcmd+="${(Q)src:t}"
+	    fullprevcmd+="${(Q)src:t}"
 	    if [[ -r "${(Q)src}" ]]; then
-		previewcmd+=" ($(zstat +size ${(Q)src}) bytes)"
+		fullprevcmd+=" ($(zstat +size ${(Q)src}) bytes)"
 	    fi
-	    previewcmd+="\n"
+	    fullprevcmd+="\n"
 	else
-	    previewcmd+="${src}\n"
+	    fullprevcmd+="${src}\n"
 	fi
     }
     # put row of ='s under list of sources
-    previewcmd+="${(l:((COLUMNS))::=:)}' && "
+    fullprevcmd+="${(l:((COLUMNS))::=:)}' && "
 fi
 
-# optionally limit preview to head of file
-if [[ -n ${numlines} && -n ${cmdinput[@]} ]]; then
-    previewcmd+="{ head -n ${numlines} ${cmdinput[@]} | eval ${cmd} }"
-elif [[ -n ${FZFREPL_PRECMD} ]]; then
-    previewcmd+="(${FZFREPL_PRECMD}; eval ${cmd} ${cmdinput} )"    
+if [[ -n ${FZFREPL_PRECMD} ]]; then
+    fullprevcmd+="{ ${FZFREPL_PRECMD}; $prevcmd }"
 else
-    previewcmd+="eval ${cmd} ${cmdinput}"
+    fullprevcmd+="{ $prevcmd }"
 fi
 
 # set default values for help commands
@@ -366,7 +375,7 @@ IFS="
 
 qry=("${(@f)$(fzf --query="${default_query}" --sync --ansi --print-query \
 		  ${FZFREPL_HISTORY:+--history=$FZFREPL_HISTORY} \
-		  --preview="${previewcmd}" < $FZFREPL_MENU1)}")
+		  --preview="${fullprevcmd}" < $FZFREPL_MENU1)}")
 
 if ((?==130)); then
     print -u2 "Aborted"
